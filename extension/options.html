@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>LexGuard — Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #0a0a0c;
+        --surface: #111114;
+        --ink: #e8e2d6;
+        --ink-mid: rgba(232, 226, 214, 0.65);
+        --ink-low: rgba(232, 226, 214, 0.4);
+        --rule: rgba(232, 226, 214, 0.14);
+        --accent: #ff4a1f;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Inter", system-ui, sans-serif;
+        letter-spacing: -0.011em;
+        width: 480px;
+        padding: 24px;
+      }
+      h1 {
+        font-family: "Instrument Serif", serif;
+        font-weight: 400;
+        font-style: italic;
+        font-size: 32px;
+        margin: 0 0 4px;
+        letter-spacing: -0.022em;
+      }
+      .label {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-low);
+      }
+      label {
+        display: block;
+        margin-top: 18px;
+        margin-bottom: 6px;
+      }
+      input {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        color: var(--ink);
+        padding: 9px 12px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        border-radius: 2px;
+      }
+      input:focus {
+        outline: 1px solid var(--accent);
+      }
+      button {
+        margin-top: 18px;
+        background: var(--accent);
+        color: var(--bg);
+        border: none;
+        padding: 10px 16px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+      .status {
+        margin-top: 12px;
+        font-size: 12px;
+        color: var(--ink-mid);
+        min-height: 1.2em;
+      }
+      .status.saved {
+        color: var(--accent);
+      }
+      .help {
+        font-size: 12px;
+        color: var(--ink-mid);
+        margin: 4px 0 0;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <p class="label">LexGuard / Settings</p>
+    <h1>API endpoints</h1>
+
+    <label class="label" for="apiBase">Backend (Cloud Run)</label>
+    <input id="apiBase" type="url" placeholder="https://lexguard-api-…run.app" />
+    <p class="help">
+      Override only if you're running a local backend, e.g. http://localhost:8000
+    </p>
+
+    <label class="label" for="webBase">Website (full report link)</label>
+    <input id="webBase" type="url" placeholder="https://lexguard-srujan0404.vercel.app" />
+    <p class="help">
+      Where "Open full report ↗" takes you. Defaults to the Vercel deployment;
+      use http://localhost:3000 while developing.
+    </p>
+
+    <button id="save" type="button">Save</button>
+    <p id="status" class="status"></p>
+
+    <script src="options.js"></script>
+  </body>
+</html>

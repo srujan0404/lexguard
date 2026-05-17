@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>LexGuard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <span class="display-italic">Lex</span><span class="display">Guard</span>
+      </div>
+      <span id="status" class="status">
+        <span class="pulse-dot"></span>
+        <span class="label" id="status-label">Idle</span>
+      </span>
+    </header>
+
+    <section id="page-meta">
+      <p class="label">current page</p>
+      <p id="page-title">…</p>
+    </section>
+
+    <section id="controls">
+      <div class="field">
+        <span class="label">Domain</span>
+        <select id="domain">
+          <option value="employment">Employment</option>
+          <option value="privacy">Privacy</option>
+          <option value="ticketing">Ticketing</option>
+          <option value="consumer">Consumer</option>
+          <option value="rental">Rental</option>
+          <option value="generic">Generic</option>
+        </select>
+      </div>
+      <button id="scan" class="scan-btn" type="button">
+        <span class="label" id="scan-label">Scan this page</span>
+        <span aria-hidden="true">↵</span>
+      </button>
+    </section>
+
+    <section id="result" hidden>
+      <div class="result-head">
+        <span class="label">verdict</span>
+        <span class="h-line"></span>
+        <span id="severity-pill" class="pill"></span>
+      </div>
+      <div class="score-row">
+        <div>
+          <span class="label">risk score / 100</span>
+          <p id="risk-score" class="score">—</p>
+        </div>
+        <div id="recycled-banner" hidden>
+          <span class="label accent-text">recycled template</span>
+          <p id="recycled-text" class="recycled"></p>
+        </div>
+      </div>
+      <p id="cache-note" class="cache-note" hidden></p>
+      <div class="counts" id="counts"></div>
+      <div class="concerns">
+        <span class="label">top concerns</span>
+        <ol id="concerns-list"></ol>
+      </div>
+      <a id="open-full" href="#" target="_blank" rel="noreferrer" class="full-link">
+        Open full report ↗
+      </a>
+    </section>
+
+    <section id="error-box" hidden role="alert">
+      <span class="label accent-text">scan failed</span>
+      <p id="error-msg"></p>
+    </section>
+
+    <footer>
+      <p class="disclaimer">Risk intelligence, not legal advice.</p>
+      <a id="options-link" href="#" class="label">settings</a>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
