@@ -72,7 +72,7 @@ class JudgeAgent(BaseAgent):
             'Return strict JSON: {"clauses":[...], "overall_severity":"...", "risk_score":N, '
             '"top_concerns":[...], "pre_sign_checklist":[...], "summary":"..."}'
         )
-        result = await self._call(user, temperature=0.2, max_output_tokens=8192)
+        result = await self._call(user, temperature=0.2, max_output_tokens=16384)
         for key in ("clauses", "overall_severity", "risk_score"):
             if key not in result:
                 raise AnalysisError(f"Judge response missing required key: {key}")

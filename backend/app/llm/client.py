@@ -135,7 +135,7 @@ class LLMClient:
         *,
         heavy: bool = False,
         temperature: float = 0.3,
-        max_output_tokens: int = 2048,
+        max_output_tokens: int = 4096,
     ) -> str:
         return await self._generate_raw(
             system,
@@ -153,7 +153,7 @@ class LLMClient:
         *,
         heavy: bool = False,
         temperature: float = 0.2,
-        max_output_tokens: int = 4096,
+        max_output_tokens: int = 8192,
     ) -> dict[str, Any]:
         try:
             raw = await self._generate_raw(

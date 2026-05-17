@@ -60,7 +60,7 @@ class RightsAgent(BaseAgent):
             f"{json.dumps(payload, ensure_ascii=False)}\n\n"
             'Return strict JSON: {"findings": [<RightsFinding>, ...]}'
         )
-        raw = await self._call(user, temperature=0.1, max_output_tokens=6144)
+        raw = await self._call(user, temperature=0.1, max_output_tokens=12288)
         findings_raw = raw.get("findings")
         if not isinstance(findings_raw, list):
             raise AnalysisError("Rights agent did not return a 'findings' array.")

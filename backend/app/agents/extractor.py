@@ -40,7 +40,7 @@ class ExtractorAgent(BaseAgent):
             "-----\n\n"
             'Return strict JSON: {"clauses": [<Clause>, ...]}.'
         )
-        raw = await self._call(user, temperature=0.1, max_output_tokens=8192)
+        raw = await self._call(user, temperature=0.1, max_output_tokens=12288)
         clauses_raw = raw.get("clauses")
         if not isinstance(clauses_raw, list) or not clauses_raw:
             raise AnalysisError("Extractor returned no clauses.")
