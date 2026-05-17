@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Build artifacts
+build/
+dist/
+*.egg
+
+# Environment / secrets
+.env
+.env.local
+*.pem
+*.key
+service-account*.json
+gcp-key*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+
+# Node / Next.js (for later phases)
+node_modules/
+.next/
+out/
+
+# Logs
+*.log
+logs/
