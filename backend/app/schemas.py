@@ -134,7 +134,18 @@ class ClauseVerdict(_DomBase):
     safer_version: str | None = None
     risk_categories: list[RiskCategory] = Field(default_factory=list)
     statutes_cited: list[str] = Field(default_factory=list)
+    statute_refs: list[str] = Field(default_factory=list)
     confidence: float = Field(default=0.6, ge=0.0, le=1.0)
+
+
+class StatuteResponse(BaseModel):
+    id: str
+    act: str
+    section: str
+    title: str
+    summary: str
+    applies_to: list[str] = Field(default_factory=list)
+    domains: list[str] = Field(default_factory=list)
 
 
 class SeverityCounts(_DomBase):

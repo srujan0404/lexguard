@@ -135,3 +135,7 @@ def statute_by_id(statute_id: str) -> dict[str, Any] | None:
         if entry["id"] == statute_id:
             return dict(entry)
     return None
+
+
+def all_statutes() -> list[dict[str, Any]]:
+    return [dict(e) for e in _STATUTES]

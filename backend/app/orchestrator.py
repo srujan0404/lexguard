@@ -88,6 +88,16 @@ async def analyze_document(
     )
 
     verdicts = [ClauseVerdict(**c) for c in judge_result["clauses"]]
+
+    # Rights agent is the source of truth for statute IDs - override what Judge
+    # returned so frontends can resolve clickable citations against the KB.
+    rights_by_id = {f.clause_id: f for f in rights_findings}
+    for v in verdicts:
+        rf = rights_by_id.get(v.clause_id)
+        if rf:
+            v.statutes_cited = list(rf.applicable_statutes)
+            v.statute_refs = list(rf.citations)
+
     counts = SeverityCounts(
         low=sum(1 for v in verdicts if v.severity == Severity.LOW),
         medium=sum(1 for v in verdicts if v.severity == Severity.MEDIUM),

@@ -21,6 +21,7 @@ gcloud services enable \
   cloudbuild.googleapis.com \
   artifactregistry.googleapis.com \
   secretmanager.googleapis.com \
+  aiplatform.googleapis.com \
   iam.googleapis.com \
   --project "${PROJECT}"
 
@@ -36,6 +37,7 @@ fi
 echo "==> Granting IAM roles to runtime SA..."
 for ROLE in \
   roles/secretmanager.secretAccessor \
+  roles/aiplatform.user \
   roles/logging.logWriter \
   roles/monitoring.metricWriter; do
   gcloud projects add-iam-policy-binding "${PROJECT}" \

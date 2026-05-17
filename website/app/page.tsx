@@ -7,6 +7,7 @@ import { ClauseCard } from "@/components/clause-card";
 import { Checklist } from "@/components/checklist";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { StatusPulse } from "@/components/status-pulse";
+import { StatuteDrawer } from "@/components/statute-drawer";
 import { API_BASE } from "@/lib/api";
 import type { DocumentScorecard } from "@/lib/types";
 
@@ -15,6 +16,7 @@ export default function Page() {
   const [error, setError] = useState<{ message: string; requestId?: string } | null>(
     null,
   );
+  const [openStatute, setOpenStatute] = useState<string | null>(null);
 
   function handleResult(s: DocumentScorecard) {
     setError(null);
@@ -76,7 +78,12 @@ export default function Page() {
                 </div>
                 <div>
                   {scorecard.clauses.map((c, i) => (
-                    <ClauseCard key={c.clause_id} clause={c} index={i} />
+                    <ClauseCard
+                      key={c.clause_id}
+                      clause={c}
+                      index={i}
+                      onStatuteClick={setOpenStatute}
+                    />
                   ))}
                 </div>
               </section>
@@ -90,6 +97,11 @@ export default function Page() {
       </main>
 
       <Footer />
+
+      <StatuteDrawer
+        statuteId={openStatute}
+        onClose={() => setOpenStatute(null)}
+      />
     </>
   );
 }

@@ -7,9 +7,11 @@ import { SeverityPill } from "./severity-pill";
 export function ClauseCard({
   clause,
   index,
+  onStatuteClick,
 }: {
   clause: ClauseVerdict;
   index: number;
+  onStatuteClick?: (statuteId: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -68,13 +70,40 @@ export function ClauseCard({
 
           {clause.statutes_cited.length > 0 && (
             <Field label="Indian statutes">
-              <ul className="space-y-1.5 max-w-2xl">
-                {clause.statutes_cited.map((s) => (
-                  <li key={s} className="text-ink-mid text-sm leading-relaxed">
-                    <span className="text-ink-faint mr-2">§</span>
-                    {s}
-                  </li>
-                ))}
+              <ul className="space-y-2 max-w-2xl">
+                {clause.statutes_cited.map((label, i) => {
+                  const refId = clause.statute_refs[i];
+                  if (refId && onStatuteClick) {
+                    return (
+                      <li key={`${refId}-${i}`}>
+                        <button
+                          type="button"
+                          onClick={() => onStatuteClick(refId)}
+                          className="group inline-flex items-start gap-2 text-left text-ink-mid hover:text-accent transition-colors text-sm leading-relaxed"
+                        >
+                          <span className="text-ink-faint group-hover:text-accent transition-colors">
+                            §
+                          </span>
+                          <span className="underline decoration-rule decoration-1 underline-offset-4 group-hover:decoration-accent">
+                            {label}
+                          </span>
+                          <span className="text-ink-faint group-hover:text-accent transition-colors text-xs translate-y-px">
+                            ↗
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  }
+                  return (
+                    <li
+                      key={`${label}-${i}`}
+                      className="text-ink-mid text-sm leading-relaxed"
+                    >
+                      <span className="text-ink-faint mr-2">§</span>
+                      {label}
+                    </li>
+                  );
+                })}
               </ul>
             </Field>
           )}

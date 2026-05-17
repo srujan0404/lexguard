@@ -16,7 +16,7 @@ from app.schemas import AnalyzeTextRequest, AnalyzeUrlRequest, DocumentScorecard
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/analyze", tags=["analysis"])
 
-_ANALYSIS_TIMEOUT_SECONDS = 60.0
+_ANALYSIS_TIMEOUT_SECONDS = 240.0
 _ACCEPTED_PDF_MIME = {"application/pdf", "application/x-pdf"}
 
 
@@ -29,7 +29,9 @@ async def _run(text: str, domain: Domain, language: Language, source_url: str | 
             timeout=_ANALYSIS_TIMEOUT_SECONDS,
         )
     except TimeoutError as exc:
-        raise AnalysisError("Analysis exceeded the 60-second timeout.") from exc
+        raise AnalysisError(
+            f"Analysis exceeded the {int(_ANALYSIS_TIMEOUT_SECONDS)}-second timeout."
+        ) from exc
 
 
 @router.post("/text", response_model=DocumentScorecard, summary="Analyze raw text")

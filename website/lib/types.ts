@@ -41,7 +41,18 @@ export interface ClauseVerdict {
   safer_version: string | null;
   risk_categories: RiskCategory[];
   statutes_cited: string[];
+  statute_refs: string[];
   confidence: number;
+}
+
+export interface Statute {
+  id: string;
+  act: string;
+  section: string;
+  title: string;
+  summary: string;
+  applies_to: string[];
+  domains: string[];
 }
 
 export interface SeverityCounts {

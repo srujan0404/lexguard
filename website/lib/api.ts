@@ -3,6 +3,7 @@ import type {
   DocumentScorecard,
   Domain,
   Language,
+  Statute,
 } from "./types";
 
 export const API_BASE =
@@ -81,4 +82,15 @@ export async function analyzeUrl(
     body: JSON.stringify({ url, domain_hint, language }),
   });
   return parse<DocumentScorecard>(res);
+}
+
+const _statuteCache = new Map<string, Promise<Statute>>();
+
+export function getStatute(id: string): Promise<Statute> {
+  let cached = _statuteCache.get(id);
+  if (!cached) {
+    cached = fetch(`${API_BASE}/api/v1/statutes/${encodeURIComponent(id)}`).then(parse<Statute>);
+    _statuteCache.set(id, cached);
+  }
+  return cached;
 }

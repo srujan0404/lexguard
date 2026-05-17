@@ -27,35 +27,34 @@ _FIRST_OBJECT_RE = re.compile(r"\{.*\}", re.DOTALL)
 class LLMClient:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
-        self._backend_ready = False
-        self._aistudio: Any = None
+        self._client: Any = None
+        self._types: Any = None
 
     def _model_name(self, *, heavy: bool) -> str:
         return self._settings.GEMINI_MODEL_HEAVY if heavy else self._settings.GEMINI_MODEL
 
-    def _ensure_backend(self) -> None:
-        if self._backend_ready:
+    def _ensure_client(self) -> None:
+        if self._client is not None:
             return
+        from google import genai
+        from google.genai import types
+
         backend = self._settings.LLM_BACKEND
         if backend == "vertex":
-            import vertexai
-
             if not self._settings.GCP_PROJECT_ID:
                 raise LLMError("GCP_PROJECT_ID is required when LLM_BACKEND=vertex.")
-            vertexai.init(
+            self._client = genai.Client(
+                vertexai=True,
                 project=self._settings.GCP_PROJECT_ID,
                 location=self._settings.GCP_REGION,
             )
         elif backend == "aistudio":
-            import google.generativeai as genai
-
             if not self._settings.GEMINI_API_KEY:
                 raise LLMError("GEMINI_API_KEY is required when LLM_BACKEND=aistudio.")
-            genai.configure(api_key=self._settings.GEMINI_API_KEY)
-            self._aistudio = genai
+            self._client = genai.Client(api_key=self._settings.GEMINI_API_KEY)
         else:
             raise LLMError(f"Unknown LLM_BACKEND: {backend}")
-        self._backend_ready = True
+        self._types = types
 
     def _generate_raw_sync(
         self,
@@ -67,33 +66,22 @@ class LLMClient:
         max_output_tokens: int,
         json_mode: bool,
     ) -> str:
-        self._ensure_backend()
-        model_name = self._model_name(heavy=heavy)
-
-        if self._settings.LLM_BACKEND == "vertex":
-            from vertexai.generative_models import (
-                GenerationConfig,
-                GenerativeModel,
-            )
-
-            model = GenerativeModel(model_name, system_instruction=system)
-            config = GenerationConfig(
-                temperature=temperature,
-                max_output_tokens=max_output_tokens,
-                response_mime_type="application/json" if json_mode else None,
-            )
-            response = model.generate_content(user, generation_config=config)
-            return _extract_text_or_raise(response, max_output_tokens)
-
-        genai = self._aistudio
-        config: dict[str, Any] = {
+        self._ensure_client()
+        types = self._types
+        config_kwargs: dict[str, Any] = {
+            "system_instruction": system,
             "temperature": temperature,
             "max_output_tokens": max_output_tokens,
+            "thinking_config": types.ThinkingConfig(thinking_budget=0),
         }
         if json_mode:
-            config["response_mime_type"] = "application/json"
-        model = genai.GenerativeModel(model_name, system_instruction=system)
-        response = model.generate_content(user, generation_config=config)
+            config_kwargs["response_mime_type"] = "application/json"
+
+        response = self._client.models.generate_content(
+            model=self._model_name(heavy=heavy),
+            contents=user,
+            config=types.GenerateContentConfig(**config_kwargs),
+        )
         return _extract_text_or_raise(response, max_output_tokens)
 
     @retry(
@@ -153,7 +141,7 @@ class LLMClient:
         *,
         heavy: bool = False,
         temperature: float = 0.2,
-        max_output_tokens: int = 16384,
+        max_output_tokens: int = 8192,
     ) -> dict[str, Any]:
         try:
             raw = await self._generate_raw(
@@ -197,7 +185,8 @@ def _extract_text_or_raise(response: Any, requested_tokens: int) -> str:
     usage = getattr(response, "usage_metadata", None)
     text = getattr(response, "text", None)
 
-    if finish_reason and int(finish_reason) == 2:
+    finish_name = getattr(finish_reason, "name", None) or str(finish_reason or "")
+    if finish_name == "MAX_TOKENS":
         used = getattr(usage, "total_token_count", None) if usage else None
         raise LLMError(
             "Gemini hit max_output_tokens. Bump the budget for this agent.",
@@ -211,7 +200,7 @@ def _extract_text_or_raise(response: Any, requested_tokens: int) -> str:
     if not text:
         raise LLMError(
             "Gemini returned no text.",
-            details={"finish_reason": int(finish_reason) if finish_reason else None},
+            details={"finish_reason": finish_name},
         )
     return text
 

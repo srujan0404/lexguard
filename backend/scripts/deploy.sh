@@ -27,10 +27,9 @@ gcloud run deploy "${SERVICE}" \
   --min-instances 0 \
   --max-instances 2 \
   --concurrency 20 \
-  --timeout 60 \
+  --timeout 300 \
   --port 8080 \
-  --set-env-vars "LLM_BACKEND=aistudio,GCP_REGION=${REGION},APP_ENV=prod,GEMINI_MODEL=gemini-flash-latest,GEMINI_MODEL_HEAVY=gemini-flash-latest,ALLOWED_ORIGINS=*,LOG_LEVEL=INFO" \
-  --set-secrets "GEMINI_API_KEY=${SECRET_NAME}:latest" \
+  --set-env-vars "LLM_BACKEND=vertex,GCP_PROJECT_ID=${PROJECT},GCP_REGION=${REGION},APP_ENV=prod,GEMINI_MODEL=gemini-2.5-flash,GEMINI_MODEL_HEAVY=gemini-2.5-flash,ALLOWED_ORIGINS=*,LOG_LEVEL=INFO" \
   --quiet
 
 URL="$(gcloud run services describe "${SERVICE}" \
