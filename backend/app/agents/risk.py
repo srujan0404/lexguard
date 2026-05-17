@@ -42,7 +42,7 @@ class RiskAgent(BaseAgent):
             'Return strict JSON: {"findings": [<RiskFinding>, ...]} - one finding per clause_id, '
             "in the same order."
         )
-        raw = await self._call(user, temperature=0.1)
+        raw = await self._call(user, temperature=0.1, max_output_tokens=32768)
         findings_raw = raw.get("findings")
         if not isinstance(findings_raw, list):
             raise AnalysisError("Risk agent did not return a 'findings' array.")

@@ -83,7 +83,7 @@ class LLMClient:
                 response_mime_type="application/json" if json_mode else None,
             )
             response = model.generate_content(user, generation_config=config)
-            return response.text or ""
+            return _extract_text_or_raise(response, max_output_tokens)
 
         genai = self._aistudio
         config: dict[str, Any] = {
@@ -94,7 +94,7 @@ class LLMClient:
             config["response_mime_type"] = "application/json"
         model = genai.GenerativeModel(model_name, system_instruction=system)
         response = model.generate_content(user, generation_config=config)
-        return getattr(response, "text", "") or ""
+        return _extract_text_or_raise(response, max_output_tokens)
 
     @retry(
         reraise=True,
@@ -153,7 +153,7 @@ class LLMClient:
         *,
         heavy: bool = False,
         temperature: float = 0.2,
-        max_output_tokens: int = 8192,
+        max_output_tokens: int = 16384,
     ) -> dict[str, Any]:
         try:
             raw = await self._generate_raw(
@@ -178,11 +178,42 @@ def _parse_json(raw: str) -> dict[str, Any]:
     except json.JSONDecodeError:
         match = _FIRST_OBJECT_RE.search(cleaned)
         if not match:
-            raise LLMError("Gemini response was not valid JSON.") from None
+            raise LLMError(
+                "Gemini response was not valid JSON.",
+                details={"snippet": cleaned[:400]},
+            ) from None
         try:
             return json.loads(match.group(0))
         except json.JSONDecodeError as exc:
-            raise LLMError("Gemini response was not valid JSON after extraction.") from exc
+            raise LLMError(
+                "Gemini response was not valid JSON after extraction (likely truncated).",
+                details={"snippet": cleaned[-400:], "json_error": str(exc)},
+            ) from exc
+
+
+def _extract_text_or_raise(response: Any, requested_tokens: int) -> str:
+    candidates = getattr(response, "candidates", None) or []
+    finish_reason = getattr(candidates[0], "finish_reason", None) if candidates else None
+    usage = getattr(response, "usage_metadata", None)
+    text = getattr(response, "text", None)
+
+    if finish_reason and int(finish_reason) == 2:
+        used = getattr(usage, "total_token_count", None) if usage else None
+        raise LLMError(
+            "Gemini hit max_output_tokens. Bump the budget for this agent.",
+            details={
+                "requested": requested_tokens,
+                "used": used,
+                "partial": (text or "")[:400],
+            },
+        )
+
+    if not text:
+        raise LLMError(
+            "Gemini returned no text.",
+            details={"finish_reason": int(finish_reason) if finish_reason else None},
+        )
+    return text
 
 
 @lru_cache(maxsize=1)

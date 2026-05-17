@@ -32,7 +32,7 @@ class RedTeamAgent(BaseAgent):
             f"{ExtractorAgent.dump_for_prompt(clauses)}\n\n"
             'Return strict JSON: {"findings": [<RedTeamFinding>, ...]}'
         )
-        raw = await self._call(user, temperature=0.3)
+        raw = await self._call(user, temperature=0.3, max_output_tokens=32768)
         findings_raw = raw.get("findings")
         if not isinstance(findings_raw, list):
             raise AnalysisError("Red-Team agent did not return a 'findings' array.")
