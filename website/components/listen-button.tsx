@@ -39,32 +39,40 @@ export function ListenButton({ documentId }: { documentId: string }) {
   const isLoading = state === "loading";
 
   return (
-    <div className="inline-flex items-center gap-3">
+    <div className="inline-flex items-center gap-2">
       <button
         type="button"
         onClick={play}
         disabled={isLoading}
         aria-label={isPlaying ? "Stop listening" : "Listen to the verdict"}
-        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-rule hover:border-accent transition-colors disabled:opacity-50"
+        className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border transition-colors disabled:opacity-50 ${
+          isPlaying
+            ? "bg-accent text-bg border-accent"
+            : "border-rule-strong text-ink hover:border-accent hover:text-accent"
+        }`}
       >
-        <span aria-hidden className="text-base">
+        <span aria-hidden className="text-base leading-none">
           {isPlaying ? "■" : isLoading ? "…" : "▸"}
         </span>
-        <span className="label">
+        <span
+          className="label"
+          style={{ color: "inherit" }}
+        >
           {isPlaying ? "Stop" : isLoading ? "Loading" : "Listen"}
         </span>
       </button>
 
-      <div className="flex gap-1">
+      <div className="inline-flex rounded-full border border-rule bg-surface overflow-hidden">
         <LangPill active={lang === "en"} onClick={() => setLang("en")} disabled={isPlaying}>
-          en
+          EN
         </LangPill>
+        <span aria-hidden className="w-px self-stretch bg-rule" />
         <LangPill
           active={lang === "hinglish"}
           onClick={() => setLang("hinglish")}
           disabled={isPlaying}
         >
-          hi
+          HI
         </LangPill>
       </div>
 
@@ -92,9 +100,12 @@ function LangPill({
       onClick={onClick}
       disabled={disabled}
       aria-pressed={active}
-      className={`label px-2 py-1 rounded-full transition-colors disabled:opacity-50 ${
-        active ? "text-ink ring-1 ring-inset ring-accent" : "text-ink-low hover:text-ink-mid"
+      className={`label px-3 py-1.5 transition-colors disabled:opacity-50 ${
+        active
+          ? "bg-accent"
+          : "text-ink-low hover:text-ink-mid hover:bg-surface-2"
       }`}
+      style={active ? { color: "var(--color-bg)" } : undefined}
     >
       {children}
     </button>
