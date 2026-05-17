@@ -2,7 +2,8 @@ const DEFAULT_API_BASE = "https://lexguard-api-ra2lq6x47q-el.a.run.app";
 const DEFAULT_WEB_BASE = "https://lexguard-srujan0404.vercel.app";
 
 const CACHE_PREFIX = "lg:scan:";
-const CACHE_TTL_MS = 60 * 60 * 1000;
+const POLL_INTERVAL_MS = 1500;
+const STALLED_SCAN_MS = 40 * 1000;
 
 const LOADING_PHRASES = [
   "Reading the fine print",
@@ -12,6 +13,43 @@ const LOADING_PHRASES = [
 ];
 
 const SEVERITY_TONE = ["low", "medium", "high", "critical"];
+
+const TICKETING_HOSTS = [
+  "bookmyshow",
+  "paytm",
+  "ticketmaster",
+  "insider",
+  "district",
+  "zomato",
+  "skyscanner",
+  "makemytrip",
+  "irctc",
+  "redbus",
+  "ola",
+  "uber",
+];
+
+function inferDomain(url) {
+  let parsed;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return "generic";
+  }
+  const host = parsed.hostname.toLowerCase();
+  const path = parsed.pathname.toLowerCase();
+
+  if (TICKETING_HOSTS.some((h) => host.includes(h))) return "ticketing";
+  if (/\/(showtimes|seat-layout|booking|tickets|cinema|event|movie|train|flight)/.test(path))
+    return "ticketing";
+  if (/(privacy|gdpr|dpdp)/.test(path)) return "privacy";
+  if (/\/(careers|jobs|offer-letter|employment|hr|hiring|internship)/.test(path))
+    return "employment";
+  if (/\/(lease|rental|tenant|landlord|rent-agreement)/.test(path)) return "rental";
+  if (/\/(terms|conditions|tos|eula|return|refund|policy|legal|warranty|disclaimer)/.test(path))
+    return "consumer";
+  return "generic";
+}
 
 const els = {
   pageTitle: document.getElementById("page-title"),
@@ -32,9 +70,13 @@ const els = {
   errorMsg: document.getElementById("error-msg"),
   optionsLink: document.getElementById("options-link"),
   cacheNote: document.getElementById("cache-note"),
+  emptyNotice: document.getElementById("empty-notice"),
 };
 
 let phraseTimer = null;
+let pollTimer = null;
+let currentTabUrl = null;
+let currentWebBase = DEFAULT_WEB_BASE;
 
 function getConfig() {
   return new Promise((resolve) => {
@@ -59,38 +101,15 @@ function cacheKey(url) {
   }
 }
 
-function readCache(url) {
+function readEntry(url) {
   return new Promise((resolve) => {
-    const k = cacheKey(url);
-    chrome.storage.local.get(k, (items) => {
-      const entry = items[k];
-      if (!entry || Date.now() - entry.savedAt > CACHE_TTL_MS) {
-        if (entry) chrome.storage.local.remove(k);
-        return resolve(null);
-      }
-      resolve(entry);
+    chrome.storage.local.get(cacheKey(url), (items) => {
+      resolve(items[cacheKey(url)] || null);
     });
   });
 }
 
-function writeCache(url, scorecard) {
-  chrome.storage.local.set({
-    [cacheKey(url)]: { url, scorecard, savedAt: Date.now() },
-  });
-  // Evict anything stale on every write.
-  chrome.storage.local.get(null, (items) => {
-    const now = Date.now();
-    const stale = Object.entries(items)
-      .filter(
-        ([k, v]) =>
-          k.startsWith(CACHE_PREFIX) && v?.savedAt && now - v.savedAt > CACHE_TTL_MS,
-      )
-      .map(([k]) => k);
-    if (stale.length) chrome.storage.local.remove(stale);
-  });
-}
-
-function clearCache(url) {
+function clearEntry(url) {
   chrome.storage.local.remove(cacheKey(url));
 }
 
@@ -110,7 +129,7 @@ async function ensureContentInjected(tabId) {
       target: { tabId },
       files: ["content.js"],
     });
-  } catch (err) {
+  } catch {
     throw new Error("This page does not allow extensions.");
   }
 }
@@ -152,6 +171,7 @@ function severityClass(s) {
 function renderResult(scorecard, opts = {}) {
   els.errorBox.hidden = true;
   els.result.hidden = false;
+  els.emptyNotice.hidden = true;
 
   const sev = severityClass(scorecard.overall_severity);
   els.severityPill.className = `pill ${sev}`;
@@ -196,21 +216,45 @@ function renderResult(scorecard, opts = {}) {
 
 function renderError(msg) {
   els.result.hidden = true;
+  els.emptyNotice.hidden = true;
   els.errorBox.hidden = false;
   els.errorMsg.textContent = msg;
+  els.scanLabel.textContent = "Scan this page";
 }
 
-function startLoading() {
+function renderEmptyState(detection) {
+  els.emptyNotice.hidden = false;
+  let body;
+  if (detection?.reason === "too_short") {
+    body =
+      "Not enough text on this page to analyze. Open a page with terms, a policy, or an agreement.";
+  } else {
+    const hits = detection?.hits ?? 0;
+    body = `Found only ${hits} legal-ish ${hits === 1 ? "keyword" : "keywords"} and no terms/policy headings. Most likely a regular page. Scan anyway if you're sure.`;
+  }
+  els.emptyNotice.innerHTML = `
+    <span class="label">No legal text detected</span>
+    <p>${body}</p>
+  `;
+  els.statusLabel.textContent = "Nothing to flag";
+  els.scanLabel.textContent = "Scan anyway";
+  els.scan.classList.add("muted");
+}
+
+function startLoadingUI() {
   els.scan.disabled = true;
+  els.errorBox.hidden = true;
+  els.emptyNotice.hidden = true;
   let i = 0;
   els.scanLabel.textContent = LOADING_PHRASES[0];
+  if (phraseTimer) window.clearInterval(phraseTimer);
   phraseTimer = window.setInterval(() => {
     i = (i + 1) % LOADING_PHRASES.length;
     els.scanLabel.textContent = LOADING_PHRASES[i];
   }, 2400);
 }
 
-function stopLoading() {
+function stopLoadingUI() {
   els.scan.disabled = false;
   if (phraseTimer) {
     window.clearInterval(phraseTimer);
@@ -218,50 +262,98 @@ function stopLoading() {
   }
 }
 
+function stopPolling() {
+  if (pollTimer) {
+    window.clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+async function applyEntry(entry) {
+  if (!entry) return false;
+  if (entry.status === "scanning") {
+    startLoadingUI();
+    return true;
+  }
+  stopLoadingUI();
+  stopPolling();
+  if (entry.status === "done" && entry.scorecard) {
+    renderResult(entry.scorecard, { ageMs: Date.now() - (entry.savedAt || Date.now()) });
+    if (entry.reportId) {
+      els.openFull.href = `${currentWebBase}/r/${entry.reportId}`;
+    } else {
+      els.openFull.href = currentWebBase;
+    }
+    return true;
+  }
+  if (entry.status === "error") {
+    renderError(entry.error || "Scan failed.");
+    return true;
+  }
+  return false;
+}
+
+function startPolling(url) {
+  stopPolling();
+  pollTimer = window.setInterval(async () => {
+    const entry = await readEntry(url);
+    if (!entry) {
+      stopPolling();
+      stopLoadingUI();
+      return;
+    }
+    if (entry.status === "scanning") {
+      const lastActivity = entry.lastActivity || entry.startedAt || 0;
+      if (Date.now() - lastActivity > STALLED_SCAN_MS) {
+        stopPolling();
+        stopLoadingUI();
+        clearEntry(url);
+        renderError(
+          "Scan stalled. Chrome may have suspended the background worker. Click Scan to retry.",
+        );
+      }
+      return;
+    }
+    stopPolling();
+    applyEntry(entry);
+  }, POLL_INTERVAL_MS);
+}
+
 async function scan() {
-  const cfg = await getConfig();
   const tab = await activeTab();
   if (!tab?.id || !tab?.url) {
     renderError("No active tab.");
     return;
   }
+  els.scan.classList.remove("muted");
   els.errorBox.hidden = true;
   els.cacheNote.hidden = true;
-  clearCache(tab.url);
-  startLoading();
+  els.emptyNotice.hidden = true;
+  clearEntry(tab.url);
+
+  startLoadingUI();
   try {
     const extracted = await extractFromTab(tab.id);
-    const res = await fetch(`${cfg.apiBase}/api/v1/analyze/text`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    chrome.runtime.sendMessage({
+      type: "START_SCAN",
+      payload: {
+        url: tab.url,
         text: extracted.text,
-        domain_hint: els.domain.value,
+        domain: els.domain.value,
         language: "en",
-        source_url: extracted.url,
-      }),
+      },
     });
-    const body = await res.json().catch(() => null);
-    if (!res.ok) {
-      const msg = body?.error?.message || `Request failed (${res.status}).`;
-      renderError(msg);
-      els.scanLabel.textContent = "Scan this page";
-      return;
-    }
-    writeCache(tab.url, body);
-    renderResult(body);
-    els.openFull.href = cfg.webBase;
+    startPolling(tab.url);
   } catch (err) {
-    renderError(err.message || "Unexpected error.");
-    els.scanLabel.textContent = "Scan this page";
-  } finally {
-    stopLoading();
+    stopLoadingUI();
+    renderError(err?.message || "Unexpected error.");
   }
 }
 
 async function init() {
   const tab = await activeTab();
   if (!tab) return;
+  currentTabUrl = tab.url;
   els.pageTitle.textContent = tab.title || tab.url || "—";
 
   if (!/^https?:\/\//.test(tab.url || "")) {
@@ -272,13 +364,40 @@ async function init() {
   }
 
   const cfg = await getConfig();
-  els.openFull.href = cfg.webBase;
+  currentWebBase = cfg.webBase;
+  els.openFull.href = currentWebBase;
 
-  const cached = await readCache(tab.url);
-  if (cached) {
+  const inferred = inferDomain(tab.url);
+  if (inferred && inferred !== "generic") {
+    els.domain.value = inferred;
+  }
+
+  const entry = await readEntry(tab.url);
+  if (entry?.status === "scanning") {
+    const lastActivity = entry.lastActivity || entry.startedAt || 0;
+    if (Date.now() - lastActivity > STALLED_SCAN_MS) {
+      clearEntry(tab.url);
+      els.statusLabel.textContent = "Previous scan stalled";
+      renderError(
+        "The previous scan was suspended by Chrome. Click Scan to retry.",
+      );
+    } else {
+      els.statusDot.classList.add("live");
+      els.statusLabel.textContent = "Scan in progress";
+      startLoadingUI();
+      startPolling(tab.url);
+    }
+    return;
+  }
+  if (entry?.status === "done" && entry.scorecard) {
     els.statusDot.classList.add("live");
     els.statusLabel.textContent = "Cached scan";
-    renderResult(cached.scorecard, { ageMs: Date.now() - cached.savedAt });
+    applyEntry(entry);
+    return;
+  }
+  if (entry?.status === "error") {
+    els.statusLabel.textContent = "Previous scan failed";
+    renderError(entry.error || "Scan failed.");
     return;
   }
 
@@ -286,8 +405,10 @@ async function init() {
   if (det?.isLegal) {
     els.statusDot.classList.add("live");
     els.statusLabel.textContent = "Legal text detected";
+  } else if (det) {
+    renderEmptyState(det);
   } else {
-    els.statusLabel.textContent = "Scan anyway";
+    els.statusLabel.textContent = "Ready";
   }
 }
 
@@ -298,5 +419,7 @@ els.optionsLink.addEventListener("click", (e) => {
     chrome.runtime.openOptionsPage();
   }
 });
+
+window.addEventListener("unload", stopPolling);
 
 init();
