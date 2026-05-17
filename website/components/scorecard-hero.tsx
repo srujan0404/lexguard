@@ -4,10 +4,29 @@ import { SeverityPill } from "./severity-pill";
 export function ScorecardHero({ scorecard }: { scorecard: DocumentScorecard }) {
   return (
     <section className="border-t border-rule pt-12">
+      {scorecard.seen_before > 0 && (
+        <div className="mb-10 border-l-2 border-accent pl-5 py-3">
+          <p className="label text-accent mb-2">recycled template detected</p>
+          <p className="text-ink leading-relaxed max-w-2xl">
+            This exact document has appeared in{" "}
+            <span className="text-accent">{scorecard.seen_before}</span> other{" "}
+            {scorecard.seen_before === 1 ? "scan" : "scans"}
+            {scorecard.issuer_name
+              ? ` — issued by ${scorecard.issuer_name}.`
+              : "."}{" "}
+            It's a template, not personalised to you.
+          </p>
+        </div>
+      )}
       <div className="grid gap-12 md:grid-cols-[1fr_auto] md:items-end">
         <div>
           <div className="flex items-center gap-3 mb-6">
             <span className="label">verdict / {scorecard.domain}</span>
+            {scorecard.issuer_name && (
+              <span className="label text-ink-mid">
+                · {scorecard.issuer_name}
+              </span>
+            )}
             <span className="h-px flex-1 bg-rule" />
             <SeverityPill severity={scorecard.overall_severity} />
           </div>

@@ -136,6 +136,7 @@ class ClauseVerdict(_DomBase):
     statutes_cited: list[str] = Field(default_factory=list)
     statute_refs: list[str] = Field(default_factory=list)
     confidence: float = Field(default=0.6, ge=0.0, le=1.0)
+    seen_in_n_others: int = Field(default=0, ge=0)
 
 
 class StatuteResponse(BaseModel):
@@ -168,6 +169,8 @@ class DocumentScorecard(_DomBase):
     processing_ms: int = Field(..., ge=0)
     model_versions: dict[str, str] = Field(default_factory=dict)
     source_url: HttpUrl | None = None
+    issuer_name: str | None = None
+    seen_before: int = Field(default=0, ge=0)
 
 
 class HealthResponse(BaseModel):

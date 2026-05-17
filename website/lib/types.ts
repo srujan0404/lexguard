@@ -43,6 +43,7 @@ export interface ClauseVerdict {
   statutes_cited: string[];
   statute_refs: string[];
   confidence: number;
+  seen_in_n_others: number;
 }
 
 export interface Statute {
@@ -75,6 +76,8 @@ export interface DocumentScorecard {
   processing_ms: number;
   model_versions: Record<string, string>;
   source_url: string | null;
+  issuer_name: string | null;
+  seen_before: number;
 }
 
 export interface ApiError {

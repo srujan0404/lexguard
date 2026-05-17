@@ -20,7 +20,7 @@ export function ClauseCard({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="w-full text-left py-6 grid grid-cols-[3rem_auto_1fr_auto] items-center gap-5 transition-opacity hover:opacity-95"
+        className="w-full text-left py-6 grid grid-cols-[3rem_auto_1fr_auto_auto] items-center gap-5 transition-opacity hover:opacity-95"
       >
         <span className="label text-ink-faint">
           {String(index + 1).padStart(2, "0")}
@@ -29,6 +29,16 @@ export function ClauseCard({
         <h3 className="display text-2xl md:text-3xl text-ink truncate">
           {clause.title}
         </h3>
+        {clause.seen_in_n_others > 0 && (
+          <span
+            className="label text-accent inline-flex items-center gap-1.5 whitespace-nowrap"
+            title="This exact clause has appeared in other documents we've scanned"
+          >
+            <span className="inline-block h-1 w-1 rounded-full bg-accent" />
+            seen in {clause.seen_in_n_others} other{" "}
+            {clause.seen_in_n_others === 1 ? "contract" : "contracts"}
+          </span>
+        )}
         <span
           className={`label transition-transform duration-300 ${
             open ? "rotate-90" : ""

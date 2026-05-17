@@ -22,8 +22,19 @@ gcloud services enable \
   artifactregistry.googleapis.com \
   secretmanager.googleapis.com \
   aiplatform.googleapis.com \
+  firestore.googleapis.com \
   iam.googleapis.com \
   --project "${PROJECT}"
+
+echo "==> Ensuring Firestore Native database exists..."
+if ! gcloud firestore databases describe --project "${PROJECT}" >/dev/null 2>&1; then
+  gcloud firestore databases create \
+    --location="${REGION}" \
+    --type=firestore-native \
+    --project "${PROJECT}" || echo "  (database may already exist - continuing)"
+else
+  echo "  (already exists)"
+fi
 
 echo "==> Ensuring runtime service account exists..."
 if ! gcloud iam service-accounts describe "${RUNTIME_SA_EMAIL}" --project "${PROJECT}" >/dev/null 2>&1; then
@@ -38,6 +49,7 @@ echo "==> Granting IAM roles to runtime SA..."
 for ROLE in \
   roles/secretmanager.secretAccessor \
   roles/aiplatform.user \
+  roles/datastore.user \
   roles/logging.logWriter \
   roles/monitoring.metricWriter; do
   gcloud projects add-iam-policy-binding "${PROJECT}" \

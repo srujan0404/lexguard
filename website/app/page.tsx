@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Analyzer } from "@/components/analyzer";
 import { ScorecardHero } from "@/components/scorecard-hero";
@@ -108,12 +109,21 @@ export default function Page() {
 
 function Header() {
   return (
-    <header className="px-6 md:px-12 lg:px-16 max-w-6xl mx-auto pt-8 flex items-center justify-between">
-      <div className="flex items-baseline gap-3">
+    <header className="px-6 md:px-12 lg:px-16 max-w-6xl mx-auto pt-8 flex items-center justify-between flex-wrap gap-y-3">
+      <Link href="/" className="flex items-baseline gap-3">
         <span className="display-italic text-2xl">Lex</span>
         <span className="display text-2xl">Guard</span>
-      </div>
-      <StatusPulse label="Cloud Run / asia-south1" />
+      </Link>
+      <nav className="flex items-center gap-8">
+        <span className="label text-ink">Single scan</span>
+        <Link
+          href="/compare"
+          className="label text-ink-low hover:text-ink-mid transition-colors"
+        >
+          Compare
+        </Link>
+        <StatusPulse label="Cloud Run / asia-south1" />
+      </nav>
     </header>
   );
 }

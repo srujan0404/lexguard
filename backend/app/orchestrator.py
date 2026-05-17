@@ -20,6 +20,12 @@ from app.config import get_settings
 from app.core.errors import AnalysisError
 from app.knowledge.retriever import retrieve_statutes
 from app.llm import LLMClient
+from app.persistence.risk_memory import (
+    ScanContext,
+    clause_hash,
+    doc_hash,
+    get_repo,
+)
 from app.schemas import (
     ClauseVerdict,
     DocumentScorecard,
@@ -30,6 +36,7 @@ from app.schemas import (
 )
 
 log = logging.getLogger(__name__)
+_BACKGROUND_TASKS: set[asyncio.Task] = set()
 
 
 async def analyze_document(
@@ -45,6 +52,7 @@ async def analyze_document(
 
     start = time.monotonic()
     settings = get_settings()
+    repo = get_repo()
 
     extractor = ExtractorAgent(llm)
     risk = RiskAgent(llm)
@@ -54,8 +62,17 @@ async def analyze_document(
 
     log.info("orchestrator_start", extra={"domain": domain.value, "text_length": len(text)})
 
-    clauses = await extractor.run(text=text, domain=domain)
-    log.info("extractor_done", extra={"clauses": len(clauses)})
+    extracted = await extractor.run(text=text, domain=domain)
+    clauses = extracted.clauses
+    log.info(
+        "extractor_done",
+        extra={"clauses": len(clauses), "issuer_name": extracted.issuer_name},
+    )
+
+    ctx = ScanContext(
+        doc_hash=doc_hash(text),
+        clause_hashes={c.clause_id: clause_hash(c.text) for c in clauses},
+    )
 
     retrieved_context: dict[str, list[dict[str, Any]]] = {
         c.clause_id: retrieve_statutes(
@@ -64,10 +81,11 @@ async def analyze_document(
         for c in clauses
     }
 
-    risk_findings, rights_findings, redteam_findings = await asyncio.gather(
+    risk_findings, rights_findings, redteam_findings, lookup = await asyncio.gather(
         risk.run(clauses=clauses, domain=domain),
         rights.run(clauses=clauses, retrieved_context=retrieved_context, domain=domain),
         redteam.run(clauses=clauses, domain=domain),
+        repo.lookup(ctx),
     )
     log.info(
         "parallel_agents_done",
@@ -75,6 +93,7 @@ async def analyze_document(
             "risk": len(risk_findings),
             "rights": len(rights_findings),
             "redteam": len(redteam_findings),
+            "doc_seen_before": lookup.doc_seen_before,
         },
     )
 
@@ -97,6 +116,7 @@ async def analyze_document(
         if rf:
             v.statutes_cited = list(rf.applicable_statutes)
             v.statute_refs = list(rf.citations)
+        v.seen_in_n_others = lookup.clause_seen_in_n_others.get(v.clause_id, 0)
 
     counts = SeverityCounts(
         low=sum(1 for v in verdicts if v.severity == Severity.LOW),
@@ -106,13 +126,27 @@ async def analyze_document(
     )
 
     elapsed_ms = int((time.monotonic() - start) * 1000)
+    risk_score = max(0, min(100, int(judge_result["risk_score"])))
+
+    # Fire-and-forget write so the response isn't delayed by Firestore latency.
+    record_task = asyncio.create_task(
+        repo.record(
+            ctx,
+            domain=domain.value,
+            risk_score=risk_score,
+            issuer_name=extracted.issuer_name,
+        )
+    )
+    _BACKGROUND_TASKS.add(record_task)
+    record_task.add_done_callback(_BACKGROUND_TASKS.discard)
+
     log.info("orchestrator_done", extra={"processing_ms": elapsed_ms})
 
     return DocumentScorecard(
         document_id=uuid.uuid4().hex[:12],
         domain=domain,
         overall_severity=Severity(judge_result["overall_severity"]),
-        risk_score=max(0, min(100, int(judge_result["risk_score"]))),
+        risk_score=risk_score,
         counts=counts,
         top_concerns=judge_result.get("top_concerns", []),
         pre_sign_checklist=judge_result.get("pre_sign_checklist", []),
@@ -127,6 +161,8 @@ async def analyze_document(
             "judge": settings.GEMINI_MODEL_HEAVY,
         },
         source_url=source_url,  # type: ignore[arg-type]
+        issuer_name=extracted.issuer_name,
+        seen_before=lookup.doc_seen_before,
     )
 
 
