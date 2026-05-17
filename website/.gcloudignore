@@ -1,0 +1,12 @@
+node_modules
+.next
+.vercel
+*.log
+.env
+.env.*
+!.env.example
+README.md
+AGENTS.md
+CLAUDE.md
+.git
+.DS_Store
