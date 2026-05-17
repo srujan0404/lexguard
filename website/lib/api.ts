@@ -126,3 +126,7 @@ export async function getSuggestedQuestions(documentId: string): Promise<string[
   const body = await parse<{ suggestions: string[] }>(res);
   return body.suggestions;
 }
+
+export function audioUrl(documentId: string, lang: "en" | "hinglish" = "en"): string {
+  return `${API_BASE}/api/v1/scans/${encodeURIComponent(documentId)}/audio?lang=${lang}`;
+}

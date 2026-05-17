@@ -23,8 +23,43 @@ gcloud services enable \
   secretmanager.googleapis.com \
   aiplatform.googleapis.com \
   firestore.googleapis.com \
+  texttospeech.googleapis.com \
+  storage.googleapis.com \
   iam.googleapis.com \
   --project "${PROJECT}"
+
+echo "==> Ensuring audio cache bucket exists..."
+BUCKET="lexguard-cache-${PROJECT}"
+if ! gcloud storage buckets describe "gs://${BUCKET}" --project "${PROJECT}" >/dev/null 2>&1; then
+  gcloud storage buckets create "gs://${BUCKET}" \
+    --project "${PROJECT}" \
+    --location "${REGION}" \
+    --uniform-bucket-level-access \
+    --no-public-access-prevention=false 2>/dev/null || true
+  echo "  (created gs://${BUCKET})"
+else
+  echo "  (already exists)"
+fi
+
+echo "==> Setting 1-hour lifecycle delete on audio cache..."
+LIFECYCLE_TMP="$(mktemp)"
+cat > "${LIFECYCLE_TMP}" <<'JSON'
+{
+  "lifecycle": {
+    "rule": [
+      {
+        "action": {"type": "Delete"},
+        "condition": {"age": 1}
+      }
+    ]
+  }
+}
+JSON
+gcloud storage buckets update "gs://${BUCKET}" \
+  --lifecycle-file="${LIFECYCLE_TMP}" \
+  --project "${PROJECT}" >/dev/null 2>&1 \
+  || echo "  (lifecycle update skipped - configure 1-day TTL in console if you care; audio cache is tiny)"
+rm -f "${LIFECYCLE_TMP}"
 
 echo "==> Ensuring Firestore Native database exists..."
 if ! gcloud firestore databases describe --project "${PROJECT}" >/dev/null 2>&1; then
@@ -50,6 +85,7 @@ for ROLE in \
   roles/secretmanager.secretAccessor \
   roles/aiplatform.user \
   roles/datastore.user \
+  roles/storage.objectAdmin \
   roles/logging.logWriter \
   roles/monitoring.metricWriter; do
   gcloud projects add-iam-policy-binding "${PROJECT}" \

@@ -1,4 +1,5 @@
 import type { DocumentScorecard } from "@/lib/types";
+import { ListenButton } from "./listen-button";
 import { SeverityPill } from "./severity-pill";
 
 export function ScorecardHero({ scorecard }: { scorecard: DocumentScorecard }) {
@@ -20,14 +21,15 @@ export function ScorecardHero({ scorecard }: { scorecard: DocumentScorecard }) {
       )}
       <div className="grid gap-12 md:grid-cols-[1fr_auto] md:items-end">
         <div>
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-6 flex-wrap">
             <span className="label">verdict / {scorecard.domain}</span>
             {scorecard.issuer_name && (
               <span className="label text-ink-mid">
                 · {scorecard.issuer_name}
               </span>
             )}
-            <span className="h-px flex-1 bg-rule" />
+            <span className="h-px flex-1 bg-rule min-w-6" />
+            <ListenButton documentId={scorecard.document_id} />
             <SeverityPill severity={scorecard.overall_severity} />
           </div>
 

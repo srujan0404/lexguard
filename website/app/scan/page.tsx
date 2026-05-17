@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { useState } from "react";
+import { Analyzer } from "@/components/analyzer";
 import { AskFab } from "@/components/ask-fab";
 import { ChatPanel } from "@/components/chat-panel";
 import { Checklist } from "@/components/checklist";
@@ -10,91 +11,70 @@ import { ScorecardHero } from "@/components/scorecard-hero";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { StatusPulse } from "@/components/status-pulse";
 import { StatuteDrawer } from "@/components/statute-drawer";
-import { LexGuardApiError, API_BASE } from "@/lib/api";
 import type { DocumentScorecard } from "@/lib/types";
 
-export default function ReportPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = use(params);
+export default function ScanPage() {
   const [scorecard, setScorecard] = useState<DocumentScorecard | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ message: string; requestId?: string } | null>(
+    null,
+  );
   const [openStatute, setOpenStatute] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    fetch(`${API_BASE}/api/v1/reports/${encodeURIComponent(id)}`)
-      .then(async (res) => {
-        const body = await res.json().catch(() => null);
-        if (!res.ok) {
-          const msg =
-            body?.error?.message ||
-            (res.status === 404
-              ? "Report not found or has expired (24h TTL)."
-              : `Failed to load report (${res.status}).`);
-          throw new LexGuardApiError(
-            body?.error?.code || "fetch_failed",
-            res.status,
-            msg,
-          );
-        }
-        return body as DocumentScorecard;
-      })
-      .then((data) => {
-        if (!cancelled) setScorecard(data);
-      })
-      .catch((e: Error) => {
-        if (!cancelled) setError(e.message);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [id]);
+  function handleResult(s: DocumentScorecard) {
+    setError(null);
+    setScorecard(s);
+    requestAnimationFrame(() => {
+      document
+        .getElementById("results")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
+
+  function handleError(e: { message: string; requestId?: string }) {
+    setScorecard(null);
+    setError(e);
+  }
 
   return (
     <>
       <Header />
 
       <main className="px-6 md:px-12 lg:px-16 max-w-6xl mx-auto pb-32">
-        <section className="pt-20 md:pt-24">
-          <p className="label mb-4">shared report · {id}</p>
-          <h1 className="display max-w-3xl text-[clamp(2rem,5vw,3.5rem)] text-ink leading-[1.05]">
-            Editorial scorecard,
+        <section className="pt-16 md:pt-20">
+          <p className="label mb-6">scan a document</p>
+          <h1 className="display max-w-4xl text-[clamp(2rem,5vw,3.6rem)] text-ink leading-[1.05]">
+            Paste it, upload it, or
             <br />
-            <span className="display-italic">delivered</span> from the extension.
+            give us a <span className="display-italic">URL</span>.
           </h1>
+          <p className="mt-6 max-w-2xl text-ink-mid leading-relaxed">
+            About 50 seconds end-to-end. Five agents in parallel, grounded in
+            Indian civil law. We never store the document text — only a hash for
+            template detection.
+          </p>
         </section>
 
-        {loading && (
-          <p className="label mt-16">Loading report…</p>
-        )}
+        <ScrollReveal className="mt-14">
+          <Analyzer onResult={handleResult} onError={handleError} />
+        </ScrollReveal>
 
         {error && (
           <div
             role="alert"
-            className="mt-12 border border-accent/40 bg-accent-soft px-5 py-4"
+            className="mt-10 border border-accent/40 bg-accent-soft px-5 py-4"
           >
-            <p className="label text-accent mb-1">report unavailable</p>
-            <p className="text-ink-mid text-sm">{error}</p>
-            <p className="text-ink-low text-xs mt-3">
-              Reports expire after 24 hours. Rescan from{" "}
-              <Link href="/" className="underline hover:text-accent">
-                the website
-              </Link>{" "}
-              or the extension to generate a fresh one.
-            </p>
+            <p className="label text-accent mb-1">scan failed</p>
+            <p className="text-ink-mid text-sm">{error.message}</p>
+            {error.requestId && (
+              <p className="text-ink-low text-xs mt-2 font-mono">
+                request_id: {error.requestId}
+              </p>
+            )}
           </div>
         )}
 
         {scorecard && (
-          <div className="mt-16 space-y-12">
+          <div id="results" className="mt-20 space-y-12">
             <ScrollReveal>
               <ScorecardHero scorecard={scorecard} />
             </ScrollReveal>
@@ -152,28 +132,6 @@ export default function ReportPage({
   );
 }
 
-function Footer() {
-  return (
-    <footer className="px-6 md:px-12 lg:px-16 max-w-6xl mx-auto pb-12">
-      <div className="border-t border-rule pt-8 flex flex-wrap gap-y-3 gap-x-8 items-baseline">
-        <span className="label">disclaimer</span>
-        <p className="text-ink-mid text-sm max-w-2xl leading-relaxed">
-          LexGuard is risk intelligence, not legal advice. It surfaces signals you
-          can act on; it does not substitute for a lawyer when stakes are real.
-        </p>
-        <a
-          href="https://github.com/srujan0404/lexguard"
-          target="_blank"
-          rel="noreferrer"
-          className="ml-auto label hover:text-accent transition-colors"
-        >
-          GitHub ↗
-        </a>
-      </div>
-    </footer>
-  );
-}
-
 function Header() {
   return (
     <header className="relative z-10 px-6 md:px-12 lg:px-16 max-w-6xl mx-auto pt-8 flex items-center justify-between flex-wrap gap-y-3">
@@ -182,24 +140,41 @@ function Header() {
         <span className="display text-2xl">Guard</span>
       </Link>
       <nav className="flex items-center gap-1 border border-rule rounded-full p-1">
-        <NavPill href="/" label="Home" />
-        <NavPill href="/scan" label="Scan" />
-        <NavPill href="/compare" label="Compare" />
+        <NavPill href="/" label="Home" active={false} />
+        <NavPill href="/scan" label="Scan" active />
+        <NavPill href="/compare" label="Compare" active={false} />
       </nav>
-      <StatusPulse label="Shared report" />
+      <StatusPulse label="Cloud Run / asia-south1" />
     </header>
   );
 }
 
-function NavPill({ href, label }: { href: string; label: string }) {
+function NavPill({
+  href,
+  label,
+  active,
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+}) {
   return (
     <Link
       href={href}
-      className="relative px-4 py-1.5 rounded-full transition-colors"
+      className={`relative px-4 py-1.5 rounded-full transition-colors ${
+        active ? "bg-surface" : ""
+      }`}
     >
-      <span className="label text-ink-low hover:text-ink-mid transition-colors">
+      <span
+        className={`label ${
+          active ? "text-ink" : "text-ink-low hover:text-ink-mid transition-colors"
+        }`}
+      >
         {label}
       </span>
+      {active && (
+        <span className="absolute inset-x-3 -bottom-px h-px bg-accent" aria-hidden />
+      )}
     </Link>
   );
 }
@@ -219,5 +194,28 @@ function Footnote({ scorecard }: { scorecard: DocumentScorecard }) {
           .join("  ·  ")}
       </span>
     </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="px-6 md:px-12 lg:px-16 max-w-6xl mx-auto pb-12">
+      <div className="border-t border-rule pt-8 flex flex-wrap gap-y-3 gap-x-8 items-baseline">
+        <span className="label">disclaimer</span>
+        <p className="text-ink-mid text-sm max-w-2xl leading-relaxed">
+          LexGuard is risk intelligence, not legal advice. It surfaces signals
+          you can act on; it does not substitute for a lawyer when stakes are
+          real.
+        </p>
+        <a
+          href="https://github.com/srujan0404/lexguard"
+          target="_blank"
+          rel="noreferrer"
+          className="ml-auto label hover:text-accent transition-colors"
+        >
+          GitHub ↗
+        </a>
+      </div>
+    </footer>
   );
 }

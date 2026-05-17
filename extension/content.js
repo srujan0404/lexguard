@@ -39,10 +39,9 @@ const LEGAL_KEYWORDS = [
 ];
 
 const STRONG_HEADING_PATTERNS = [
-  /\bterms\s*(&|and)\s*conditions?\b/i,
+  /\bterms\s*(&|and|&amp;)\s*conditions?\b/i,
   /\bterms\s+of\s+(use|service)\b/i,
-  /\bprivacy\s+policy\b/i,
-  /\bprivacy\s+notice\b/i,
+  /\bprivacy\s+(policy|notice)\b/i,
   /\buser\s+agreement\b/i,
   /\bcookie\s+(policy|notice)\b/i,
   /\brefund\s+policy\b/i,
@@ -51,10 +50,13 @@ const STRONG_HEADING_PATTERNS = [
   /\beula\b/i,
   /\bdisclaimer\b/i,
   /\bpublic\s+notice\b/i,
+  /\bdata\s+protection\b/i,
 ];
 
 const KEYWORD_THRESHOLD = 4;
 const MAX_EXTRACT_CHARS = 60_000;
+const MIN_LEGAL_ROOT_CHARS = 500;
+const MAX_LEGAL_ROOT_CHARS = 100_000;
 
 const MODAL_SELECTORS = [
   "dialog[open]",
@@ -83,6 +85,39 @@ function visibleModal() {
   return null;
 }
 
+function matchesAnyStrongPattern(text) {
+  if (!text) return null;
+  for (const re of STRONG_HEADING_PATTERNS) {
+    const m = re.exec(text);
+    if (m) return m[0];
+  }
+  return null;
+}
+
+// Find the smallest element whose innerText contains a legal heading phrase AND
+// has enough surrounding text to be worth scanning. This catches T&C content
+// inside custom-class modals (BookMyShow, Razorpay checkout, etc.).
+function findLegalRoot() {
+  if (!document.body) return null;
+  const all = document.body.querySelectorAll("*");
+  let best = null;
+  let bestLen = Infinity;
+  for (let i = 0; i < all.length; i++) {
+    const el = all[i];
+    if (!(el instanceof HTMLElement)) continue;
+    const txt = el.innerText;
+    if (!txt) continue;
+    const len = txt.length;
+    if (len < MIN_LEGAL_ROOT_CHARS || len > MAX_LEGAL_ROOT_CHARS) continue;
+    if (!matchesAnyStrongPattern(txt)) continue;
+    if (len < bestLen) {
+      best = el;
+      bestLen = len;
+    }
+  }
+  return best;
+}
+
 function detectLegalPage() {
   const url = location.pathname.toLowerCase();
   if (LEGAL_URL_PATTERNS.some((p) => url.includes(p))) {
@@ -90,47 +125,45 @@ function detectLegalPage() {
   }
 
   const title = (document.title || "").toLowerCase();
-  for (const re of STRONG_HEADING_PATTERNS) {
-    if (re.test(title)) return { isLegal: true, reason: "title", match: title.slice(0, 80) };
-  }
+  const titleMatch = matchesAnyStrongPattern(title);
+  if (titleMatch) return { isLegal: true, reason: "title", match: titleMatch };
 
-  // Modal / dialog headings (often a "Terms & Conditions" overlay on otherwise
-  // non-legal pages like checkout flows or movie booking).
   const modal = visibleModal();
   if (modal) {
-    const modalText = (modal.innerText || "").slice(0, 4000);
-    for (const re of STRONG_HEADING_PATTERNS) {
-      if (re.test(modalText)) {
-        return { isLegal: true, reason: "modal", match: modalText.slice(0, 120) };
-      }
-    }
+    const modalText = (modal.innerText || "").slice(0, 8000);
+    const modalMatch = matchesAnyStrongPattern(modalText);
+    if (modalMatch) return { isLegal: true, reason: "modal", match: modalMatch };
   }
 
-  // Section headings anywhere on the page.
   const headings = document.querySelectorAll(
     "h1, h2, h3, [role='heading'], [role='dialog']",
   );
   for (const h of headings) {
     const txt = (h.innerText || "").trim();
     if (!txt || txt.length > 120) continue;
-    for (const re of STRONG_HEADING_PATTERNS) {
-      if (re.test(txt)) return { isLegal: true, reason: "heading", match: txt };
-    }
+    const m = matchesAnyStrongPattern(txt);
+    if (m) return { isLegal: true, reason: "heading", match: m };
   }
 
   const text = (document.body?.innerText || "").toLowerCase();
   if (text.length < 200) return { isLegal: false, reason: "too_short", hits: 0 };
 
+  // Body-text phrase scan - catches custom-class modal headings (e.g. BookMyShow
+  // renders the T&C heading as <div class="sc-*">Terms & Conditions</div>).
+  const bodyMatch = matchesAnyStrongPattern(text);
+  if (bodyMatch) {
+    return { isLegal: true, reason: "body_phrase", match: bodyMatch };
+  }
+
   let hits = 0;
   for (const kw of LEGAL_KEYWORDS) if (text.includes(kw)) hits += 1;
-
   return hits >= KEYWORD_THRESHOLD
     ? { isLegal: true, reason: "keywords", hits }
     : { isLegal: false, reason: "low_density", hits };
 }
 
 function extractText() {
-  // Prefer a visible modal - that's usually what the user wants scanned.
+  // 1. Visible modal element first - covers <dialog> / role=dialog cases.
   const modal = visibleModal();
   if (modal) {
     const t = (modal.innerText || "").trim();
@@ -139,26 +172,37 @@ function extractText() {
     }
   }
 
+  // 2. Smallest DOM element whose text contains a legal heading phrase and has
+  //    enough chars to be substantive. Wins on BookMyShow-style modals where
+  //    the dialog uses custom CSS classes instead of role=dialog.
+  const root = findLegalRoot();
+  if (root) {
+    const t = (root.innerText || "").trim();
+    if (t.length > 200) {
+      return t.length > MAX_EXTRACT_CHARS ? t.slice(0, MAX_EXTRACT_CHARS) : t;
+    }
+  }
+
+  // 3. Standard main/article/body fallback.
   const roots = [
     document.querySelector("main"),
     document.querySelector("article"),
     document.querySelector('[role="main"]'),
   ].filter(Boolean);
 
-  let root = roots[0];
-  if (!root) {
+  let fallback = roots[0];
+  if (!fallback) {
     const divs = Array.from(document.body?.querySelectorAll("div") || []);
-    root = divs.reduce(
+    fallback = divs.reduce(
       (best, d) =>
         d.innerText && d.innerText.length > (best?.innerText?.length || 0) ? d : best,
       document.body,
     );
   }
-  const raw = (root?.innerText || document.body?.innerText || "").trim();
+  const raw = (fallback?.innerText || document.body?.innerText || "").trim();
   return raw.length > MAX_EXTRACT_CHARS ? raw.slice(0, MAX_EXTRACT_CHARS) : raw;
 }
 
-// Run an initial detection so the badge lights up for clearly-legal pages.
 const detection = detectLegalPage();
 if (detection.isLegal) {
   try {
@@ -168,13 +212,12 @@ if (detection.isLegal) {
       title: document.title,
     });
   } catch {
-    // service worker may be sleeping - badge will catch up on next click
+    // service worker may be sleeping - badge will catch up next click
   }
 }
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg?.type === "DETECT_LEGAL_TEXT") {
-    // Re-detect now in case the DOM has changed (modal opened, content loaded).
     const fresh = detectLegalPage();
     sendResponse({
       ...fresh,

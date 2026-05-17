@@ -10,12 +10,14 @@ export function ChatPanel({
   documentId,
   suggestedQuestions,
   language = "en",
+  defaultOpen = true,
 }: {
   documentId: string;
   suggestedQuestions: string[];
   language?: Language;
+  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [messages, setMessages] = useState<ChatTurn[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -70,19 +72,28 @@ export function ChatPanel({
   }
 
   return (
-    <section className="border-t border-rule pt-12" id="chat-panel">
+    <section
+      className="border-l-2 border-accent pl-6 md:pl-10 py-10 my-4"
+      id="chat-panel"
+    >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         className="w-full flex items-baseline gap-3 group"
       >
-        <span className="label">ask lexguard about this document</span>
+        <span className="label text-accent">ask lexguard about this document</span>
         <span className="h-px flex-1 bg-rule" />
         <span className="label group-hover:text-accent transition-colors">
           {open ? "collapse" : "expand"} {open ? "↑" : "↓"}
         </span>
       </button>
+      {open && messages.length === 0 && suggestedQuestions.length > 0 && (
+        <p className="text-ink-mid text-base leading-relaxed max-w-2xl mt-4">
+          Five agents already scanned this document end-to-end. Anything still on
+          your mind? Pick a suggested question or type your own.
+        </p>
+      )}
 
       {open && (
         <div className="mt-8 grid gap-6">
