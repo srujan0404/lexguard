@@ -37,8 +37,15 @@ class BodySizeLimitMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next: Handler) -> Response:
         content_length = request.headers.get("content-length")
         if content_length and content_length.isdigit() and int(content_length) > self.max_bytes:
+            # Outer CORSMiddleware does not always wrap early returns from BaseHTTPMiddleware,
+            # so emit the allow-origin header here to keep browser errors readable.
+            headers: dict[str, str] = {}
+            if request.headers.get("origin"):
+                headers["Access-Control-Allow-Origin"] = "*"
+                headers["Vary"] = "Origin"
             return JSONResponse(
                 status_code=413,
+                headers=headers,
                 content=_error_body(
                     "payload_too_large",
                     f"Request body exceeds {self.max_bytes} bytes.",
@@ -76,9 +83,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         if len(hits) >= self.max_requests:
             retry_after = max(1, int(self.window_seconds - (now - hits[0])))
+            headers = {"Retry-After": str(retry_after)}
+            if request.headers.get("origin"):
+                headers["Access-Control-Allow-Origin"] = "*"
+                headers["Vary"] = "Origin"
             return JSONResponse(
                 status_code=429,
-                headers={"Retry-After": str(retry_after)},
+                headers=headers,
                 content=_error_body(
                     "rate_limited",
                     f"Too many requests. Try again in {retry_after}s.",

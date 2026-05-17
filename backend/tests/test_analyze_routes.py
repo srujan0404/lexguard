@@ -149,6 +149,27 @@ def test_analyze_pdf_rejects_oversized(
     assert response.json()["error"]["code"] == "payload_too_large"
 
 
+def test_body_size_limit_returns_cors_headers(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("MAX_REQUEST_BYTES", "1024")
+    from app.config import get_settings
+    from app.main import create_app
+
+    get_settings.cache_clear()
+    try:
+        with TestClient(create_app()) as small_client:
+            response = small_client.post(
+                "/api/v1/analyze/pdf",
+                files={"file": ("x.pdf", io.BytesIO(b"x" * 2048), "application/pdf")},
+                headers={"Origin": "http://localhost:3000"},
+            )
+    finally:
+        get_settings.cache_clear()
+
+    assert response.status_code == 413
+    assert response.json()["error"]["code"] == "payload_too_large"
+    assert response.headers.get("access-control-allow-origin") == "*"
+
+
 def test_analyze_url_rejects_bad_scheme(client: TestClient) -> None:
     response = client.post(
         "/api/v1/analyze/url",
