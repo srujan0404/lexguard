@@ -36,6 +36,7 @@ jobs:
           cache-dependency-path: website/package-lock.json
       - run: npm ci
       - run: npm run lint
+      - run: npm test
       - run: npm run build
         env:
           NEXT_PUBLIC_LEXGUARD_API_URL: https://lexguard-api-ra2lq6x47q-el.a.run.app
