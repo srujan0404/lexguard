@@ -78,6 +78,18 @@ export interface DocumentScorecard {
   source_url: string | null;
   issuer_name: string | null;
   seen_before: number;
+  suggested_questions: string[];
+}
+
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface FollowupResponse {
+  answer: string;
+  document_id: string;
+  cited_clause_ids: string[];
 }
 
 export interface ApiError {

@@ -20,6 +20,7 @@ from app.config import get_settings
 from app.core.errors import AnalysisError
 from app.knowledge.retriever import retrieve_statutes
 from app.llm import LLMClient
+from app.persistence.artifacts import get_artifact_store
 from app.persistence.risk_memory import (
     ScanContext,
     clause_hash,
@@ -127,6 +128,29 @@ async def analyze_document(
 
     elapsed_ms = int((time.monotonic() - start) * 1000)
     risk_score = max(0, min(100, int(judge_result["risk_score"])))
+    suggested_questions = list(judge_result.get("suggested_questions", []) or [])[:3]
+    document_id = uuid.uuid4().hex[:12]
+
+    # Persist full artifacts for the followup chat (1h TTL).
+    artifacts_payload = {
+        "domain": domain.value,
+        "language": language,
+        "summary": judge_result.get("summary", ""),
+        "issuer_name": extracted.issuer_name,
+        "clauses": [c.model_dump(mode="json") for c in clauses],
+        "risk": [f.model_dump(mode="json") for f in risk_findings],
+        "rights": [f.model_dump(mode="json") for f in rights_findings],
+        "redteam": [f.model_dump(mode="json") for f in redteam_findings],
+        "verdicts": [v.model_dump(mode="json") for v in verdicts],
+        "retrieved_statutes": retrieved_context,
+        "suggested_questions": suggested_questions,
+        "risk_score": risk_score,
+    }
+    artifact_task = asyncio.create_task(
+        get_artifact_store().put(document_id, artifacts_payload)
+    )
+    _BACKGROUND_TASKS.add(artifact_task)
+    artifact_task.add_done_callback(_BACKGROUND_TASKS.discard)
 
     # Fire-and-forget write so the response isn't delayed by Firestore latency.
     record_task = asyncio.create_task(
@@ -143,7 +167,7 @@ async def analyze_document(
     log.info("orchestrator_done", extra={"processing_ms": elapsed_ms})
 
     return DocumentScorecard(
-        document_id=uuid.uuid4().hex[:12],
+        document_id=document_id,
         domain=domain,
         overall_severity=Severity(judge_result["overall_severity"]),
         risk_score=risk_score,
@@ -163,6 +187,7 @@ async def analyze_document(
         source_url=source_url,  # type: ignore[arg-type]
         issuer_name=extracted.issuer_name,
         seen_before=lookup.doc_seen_before,
+        suggested_questions=suggested_questions,
     )
 
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
+import { ChatPanel } from "@/components/chat-panel";
 import { Checklist } from "@/components/checklist";
 import { ClauseCard } from "@/components/clause-card";
 import { ScorecardHero } from "@/components/scorecard-hero";
@@ -121,6 +122,14 @@ export default function ReportPage({
                   ))}
                 </div>
               </section>
+            </ScrollReveal>
+
+            <ScrollReveal>
+              <ChatPanel
+                documentId={scorecard.document_id}
+                suggestedQuestions={scorecard.suggested_questions}
+                language="en"
+              />
             </ScrollReveal>
 
             <ScrollReveal>

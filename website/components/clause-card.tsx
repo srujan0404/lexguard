@@ -15,7 +15,10 @@ export function ClauseCard({
 }) {
   const [open, setOpen] = useState(false);
   return (
-    <article className="border-t border-rule first:border-t-0 group">
+    <article
+      id={`clause-${clause.clause_id}`}
+      className="border-t border-rule first:border-t-0 group scroll-mt-24 transition-colors"
+    >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

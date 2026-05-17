@@ -171,6 +171,29 @@ class DocumentScorecard(_DomBase):
     source_url: HttpUrl | None = None
     issuer_name: str | None = None
     seen_before: int = Field(default=0, ge=0)
+    suggested_questions: list[str] = Field(default_factory=list)
+
+
+class ChatTurn(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(..., min_length=1, max_length=4000)
+
+
+class FollowupRequest(_ReqBase):
+    question: str = Field(..., min_length=2, max_length=500)
+    history: list[ChatTurn] = Field(default_factory=list)
+    language: Language = "en"
+
+
+class FollowupResponse(BaseModel):
+    answer: str
+    document_id: str
+    cited_clause_ids: list[str] = Field(default_factory=list)
+
+
+class SuggestionsResponse(BaseModel):
+    document_id: str
+    suggestions: list[str]
 
 
 class HealthResponse(BaseModel):

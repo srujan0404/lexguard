@@ -1,7 +1,9 @@
 import type {
   ApiError,
+  ChatTurn,
   DocumentScorecard,
   Domain,
+  FollowupResponse,
   Language,
   Statute,
 } from "./types";
@@ -93,4 +95,34 @@ export function getStatute(id: string): Promise<Statute> {
     _statuteCache.set(id, cached);
   }
   return cached;
+}
+
+export async function askFollowup({
+  documentId,
+  question,
+  history,
+  language = "en",
+}: {
+  documentId: string;
+  question: string;
+  history: ChatTurn[];
+  language?: Language;
+}): Promise<FollowupResponse> {
+  const res = await fetch(
+    `${API_BASE}/api/v1/scans/${encodeURIComponent(documentId)}/followup`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, history, language }),
+    },
+  );
+  return parse<FollowupResponse>(res);
+}
+
+export async function getSuggestedQuestions(documentId: string): Promise<string[]> {
+  const res = await fetch(
+    `${API_BASE}/api/v1/scans/${encodeURIComponent(documentId)}/suggestions`,
+  );
+  const body = await parse<{ suggestions: string[] }>(res);
+  return body.suggestions;
 }

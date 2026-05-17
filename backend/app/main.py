@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes_analyze import router as analyze_router
 from app.api.routes_health import router as health_router
 from app.api.routes_reports import router as reports_router
+from app.api.routes_scans import router as scans_router
 from app.api.routes_statutes import router as statutes_router
 from app.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
@@ -52,6 +53,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             {"name": "analysis", "description": "Document risk analysis endpoints."},
             {"name": "statutes", "description": "Curated Indian civil-law knowledge base."},
             {"name": "reports", "description": "Shareable scorecard storage with 24h TTL."},
+            {"name": "chat", "description": "Grounded follow-up chat scoped to a prior scan."},
         ],
         lifespan=_build_lifespan(settings),
     )
@@ -80,6 +82,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(analyze_router)
     app.include_router(statutes_router)
     app.include_router(reports_router)
+    app.include_router(scans_router)
 
     return app
 

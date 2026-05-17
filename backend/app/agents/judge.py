@@ -28,7 +28,15 @@ Then output a document-level scorecard:
 - pre_sign_checklist: 3-5 imperative questions the user should ask before signing (e.g., "Ask HR whether maximum probation duration is fixed in writing.")
 - summary: 2-3 sentences overall verdict.
 
-Output strict JSON: {"clauses": [<ClauseVerdict>, ...], "overall_severity": "...", "risk_score": N, "top_concerns": [...], "pre_sign_checklist": [...], "summary": "..."}"""
+Also emit suggested_questions:
+- A list of EXACTLY 3 questions a regular Indian user would naturally ask after reading this scorecard
+- Each must reference something SPECIFIC from this document (a clause type, an amount, a duration, a party name), not generic
+- Each is plain language, max 12 words
+- Cover different angles (e.g., one about negotiation, one about a specific risky clause, one about enforceability)
+- Match the requested language (English or Hinglish)
+- Banned generic patterns: "Tell me more about X", "What does the contract say about Y", "Can you explain this document"
+
+Output strict JSON: {"clauses": [<ClauseVerdict>, ...], "overall_severity": "...", "risk_score": N, "top_concerns": [...], "pre_sign_checklist": [...], "summary": "...", "suggested_questions": ["q1", "q2", "q3"]}"""
 
 
 class JudgeAgent(BaseAgent):
