@@ -17,7 +17,7 @@ from app.agents import (
     RiskAgent,
 )
 from app.config import get_settings
-from app.core.errors import AnalysisError
+from app.core.errors import IngestionError
 from app.knowledge.retriever import retrieve_statutes
 from app.llm import LLMClient
 from app.persistence.artifacts import get_artifact_store
@@ -49,7 +49,10 @@ async def analyze_document(
     llm: LLMClient | None = None,
 ) -> DocumentScorecard:
     if not text or len(text.strip()) < 20:
-        raise AnalysisError("Document text is too short to analyze.")
+        raise IngestionError(
+            "Document text is too short to analyze. Paste at least a few sentences of "
+            "legal/contract text or send a working public URL."
+        )
 
     start = time.monotonic()
     settings = get_settings()
