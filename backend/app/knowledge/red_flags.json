@@ -1,0 +1,525 @@
+[
+  {
+    "domain": "employment",
+    "patterns": [
+      {
+        "id": "emp_probation_extendable",
+        "name": "Probation extendable at sole discretion",
+        "regex": "probation.{0,80}(extend|extended|at\\s+(the\\s+)?(sole\\s+)?discretion|without\\s+(prior\\s+)?notice)",
+        "phrase_examples": [
+          "probation period may be extended at the sole discretion of the company",
+          "probation may be extended without notice",
+          "probation period subject to extension at our discretion"
+        ],
+        "risk_categories": ["extended_probation", "wage_leave_ambiguity"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "emp_ip_unrelated",
+        "name": "IP assignment covering unrelated inventions",
+        "regex": "(intellectual\\s+property|inventions|works).{0,120}(unrelated|not\\s+related|in\\s+perpetuity|whether\\s+related\\s+or)",
+        "phrase_examples": [
+          "assigns all intellectual property whether related or unrelated to the role",
+          "all inventions conceived during or after employment",
+          "all works in perpetuity"
+        ],
+        "risk_categories": ["overbroad_ip_assignment"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "emp_non_compete",
+        "name": "Post-termination non-compete",
+        "regex": "(non-compete|shall\\s+not.{0,40}(compete|engage|work|similar\\s+business)).{0,60}(months|years|period|following\\s+termination)",
+        "phrase_examples": [
+          "shall not engage in any business similar to or competitive with the company for 24 months following termination",
+          "non-compete period of two years post separation",
+          "restricted from working with any competitor"
+        ],
+        "risk_categories": ["non_compete_overreach"],
+        "severity_hint": "critical"
+      },
+      {
+        "id": "emp_leave_company_policy",
+        "name": "Leave / benefits subject to changing company policy",
+        "regex": "(leave|benefits|policy).{0,60}(revised|updated|amended|from\\s+time\\s+to\\s+time|company\\s+policy)",
+        "phrase_examples": [
+          "leave as per company policy which may be revised from time to time",
+          "benefits subject to company policy in force",
+          "policies may be amended at any time"
+        ],
+        "risk_categories": ["wage_leave_ambiguity", "unilateral_changes"],
+        "severity_hint": "medium"
+      },
+      {
+        "id": "emp_termination_without_notice",
+        "name": "Employer termination without notice or cause",
+        "regex": "(terminate|termination).{0,80}(at\\s+any\\s+time|without\\s+(prior\\s+)?notice|for\\s+any\\s+reason|without\\s+cause|sole\\s+discretion)",
+        "phrase_examples": [
+          "company may terminate this agreement at any time without notice for any reason",
+          "termination at the sole discretion of the company",
+          "no notice period required for termination by the company"
+        ],
+        "risk_categories": ["vague_termination"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "emp_employee_forfeiture",
+        "name": "Employee notice-period forfeiture",
+        "regex": "(forfeit|forfeiture|deduct|adjusted).{0,80}(salary|stipend|months|notice)",
+        "phrase_examples": [
+          "failure to serve notice will result in forfeiture of two months salary",
+          "salary deduction in lieu of notice period",
+          "buyout of notice period at three months pay"
+        ],
+        "risk_categories": ["wage_leave_ambiguity", "vague_termination"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "emp_stipend_revision",
+        "name": "Stipend / salary revised at company will",
+        "regex": "(stipend|salary|compensation).{0,80}(revised|reduced|modified|adjusted).{0,40}(without\\s+notice|sole\\s+discretion|at\\s+any\\s+time)",
+        "phrase_examples": [
+          "stipend amount may be revised by the company at any time without prior notice",
+          "compensation may be modified at our discretion",
+          "salary subject to adjustment without notice"
+        ],
+        "risk_categories": ["wage_leave_ambiguity"],
+        "severity_hint": "medium"
+      },
+      {
+        "id": "emp_service_bond",
+        "name": "Service bond / minimum tenure with penalty",
+        "regex": "(serve|service\\s+bond|minimum\\s+(tenure|service)).{0,80}(year|years|months|liquidated|penalty)",
+        "phrase_examples": [
+          "must serve a minimum of two years failing which liquidated damages of one lakh shall be payable",
+          "service bond of three years",
+          "early exit penalty"
+        ],
+        "risk_categories": ["wage_leave_ambiguity"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "emp_exclusive_jurisdiction",
+        "name": "Exclusive jurisdiction outside employee's location",
+        "regex": "(exclusive\\s+jurisdiction|courts\\s+of|disputes\\s+shall\\s+be\\s+resolved).{0,60}(only|exclusively)?",
+        "phrase_examples": [
+          "exclusive jurisdiction of the courts of Singapore",
+          "disputes shall be resolved exclusively in courts of",
+          "subject only to the jurisdiction of"
+        ],
+        "risk_categories": ["jurisdiction_trap", "forced_arbitration"],
+        "severity_hint": "medium"
+      },
+      {
+        "id": "emp_confidentiality_perpetual",
+        "name": "Perpetual confidentiality without carve-outs",
+        "regex": "(confidentiality|confidential\\s+information).{0,80}(perpetual|indefinitely|in\\s+perpetuity|survive\\s+termination)",
+        "phrase_examples": [
+          "confidentiality obligations survive termination in perpetuity",
+          "shall keep confidential indefinitely",
+          "no time limit on confidentiality"
+        ],
+        "risk_categories": ["overbroad_ip_assignment"],
+        "severity_hint": "medium"
+      },
+      {
+        "id": "emp_at_will_india",
+        "name": "'At-will' employment framing (foreign template)",
+        "regex": "at[-\\s]will\\s+employment",
+        "phrase_examples": [
+          "employment is at-will",
+          "this is an at will employment relationship"
+        ],
+        "risk_categories": ["vague_termination"],
+        "severity_hint": "medium"
+      }
+    ]
+  },
+  {
+    "domain": "privacy",
+    "patterns": [
+      {
+        "id": "priv_consent_by_use",
+        "name": "Consent inferred from continued use",
+        "regex": "(by\\s+using|continued\\s+use|by\\s+accessing).{0,60}(you\\s+consent|you\\s+agree|deemed\\s+to\\s+(have\\s+)?accept)",
+        "phrase_examples": [
+          "by using our services you consent to the collection",
+          "continued use constitutes acceptance",
+          "by accessing the site you are deemed to have agreed"
+        ],
+        "risk_categories": ["silent_consent"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "priv_unilateral_update",
+        "name": "Policy updated at any time without notice",
+        "regex": "(update|modify|amend|change).{0,60}(this\\s+(policy|privacy)|at\\s+any\\s+time|without\\s+(prior\\s+)?notice)",
+        "phrase_examples": [
+          "we may update this policy at any time without notice",
+          "we may modify this privacy policy at our discretion",
+          "amendments effective upon posting"
+        ],
+        "risk_categories": ["unilateral_changes", "silent_consent"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "priv_third_party_share",
+        "name": "Sharing with affiliates / third parties for business purposes",
+        "regex": "(share|disclose|provide).{0,80}(affiliates|third\\s+part(y|ies)|advertis|partners|service\\s+providers)",
+        "phrase_examples": [
+          "we may share your information with affiliates and third-party service providers",
+          "data may be disclosed to advertising partners",
+          "share with business partners for marketing"
+        ],
+        "risk_categories": ["third_party_sharing", "excessive_data_sharing"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "priv_indefinite_retention",
+        "name": "Indefinite or 'as deemed necessary' retention",
+        "regex": "(retain|retention|keep|store).{0,80}(indefinitely|as\\s+long\\s+as\\s+(we|necessary)|no\\s+specific\\s+period|deem\\s+necessary)",
+        "phrase_examples": [
+          "we retain your personal data for as long as we deem necessary",
+          "data stored indefinitely",
+          "retention is at our discretion"
+        ],
+        "risk_categories": ["pii_lockin"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "priv_legitimate_interest",
+        "name": "Processing on 'legitimate business interest' (not a DPDP ground)",
+        "regex": "(legitimate\\s+(business\\s+)?interest|business\\s+purposes)",
+        "phrase_examples": [
+          "we process data for our legitimate business interests",
+          "processing is necessary for legitimate interests",
+          "used for business purposes"
+        ],
+        "risk_categories": ["silent_consent", "excessive_data_sharing"],
+        "severity_hint": "medium"
+      },
+      {
+        "id": "priv_excessive_collection",
+        "name": "Collection of device, location, contacts data",
+        "regex": "(collect|gather|access).{0,80}(device\\s+identifier|imei|advertising\\s+id|location\\s+data|contacts|microphone|camera|sms|calls)",
+        "phrase_examples": [
+          "we collect device identifiers and advertising IDs",
+          "we may access your contacts and call logs",
+          "precise location data is collected"
+        ],
+        "risk_categories": ["excessive_data_sharing", "third_party_sharing"],
+        "severity_hint": "medium"
+      },
+      {
+        "id": "priv_no_erasure",
+        "name": "Erasure subject to retention / internal policy",
+        "regex": "(deletion|erasure|delete).{0,80}(subject\\s+to|at\\s+our\\s+discretion|retain|except|internal\\s+polic)",
+        "phrase_examples": [
+          "you may request deletion of your data subject to our retention obligations",
+          "deletion at our discretion",
+          "erasure is subject to internal policies"
+        ],
+        "risk_categories": ["pii_lockin"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "priv_data_export",
+        "name": "Cross-border transfer without specifics",
+        "regex": "(transfer|process|store).{0,60}(outside\\s+India|other\\s+jurisdictions|servers\\s+located|cross-border)",
+        "phrase_examples": [
+          "data may be transferred outside India",
+          "stored on servers located in other jurisdictions",
+          "cross-border processing may occur"
+        ],
+        "risk_categories": ["excessive_data_sharing", "jurisdiction_trap"],
+        "severity_hint": "medium"
+      },
+      {
+        "id": "priv_no_grievance",
+        "name": "Generic 'contact us' instead of named grievance officer",
+        "regex": "(contact|reach\\s+out).{0,40}(us|our\\s+team).{0,60}(privacy|data|concerns)",
+        "phrase_examples": [
+          "for any concerns contact us at support@",
+          "reach out to our team",
+          "if you have privacy questions contact support"
+        ],
+        "risk_categories": ["silent_consent"],
+        "severity_hint": "low"
+      },
+      {
+        "id": "priv_class_action_waiver",
+        "name": "Class action / jury trial waiver",
+        "regex": "(class\\s+action|jury\\s+trial|class\\s+arbitration).{0,40}(waiver|waive|may\\s+not)",
+        "phrase_examples": [
+          "you waive any right to bring a class action",
+          "no jury trial",
+          "class arbitration is waived"
+        ],
+        "risk_categories": ["forced_arbitration", "jurisdiction_trap"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "priv_children_data",
+        "name": "Children's data without explicit parental consent",
+        "regex": "(child|minor|under\\s+(13|18)).{0,60}(consent|use|data)",
+        "phrase_examples": [
+          "if you are under 18 you should not use the service",
+          "data of minors is processed",
+          "users under 13 require parental consent (US-style)"
+        ],
+        "risk_categories": ["silent_consent"],
+        "severity_hint": "high"
+      }
+    ]
+  },
+  {
+    "domain": "ticketing",
+    "patterns": [
+      {
+        "id": "tic_non_refundable",
+        "name": "Non-refundable under any circumstances",
+        "regex": "(non[-\\s]?refundable|no\\s+refund|all\\s+sales\\s+(are\\s+)?final).{0,60}(under\\s+any|any\\s+circumstances|whatsoever)?",
+        "phrase_examples": [
+          "all ticket sales are final and non-refundable under any circumstances",
+          "tickets are non-refundable",
+          "no refund whatsoever"
+        ],
+        "risk_categories": ["non_refundable", "weak_refund"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "tic_unilateral_reschedule",
+        "name": "Organiser may reschedule / cancel without refund",
+        "regex": "(reschedule|relocate|cancel|postpone).{0,80}(sole\\s+discretion|without\\s+(obligation|notice|refund))",
+        "phrase_examples": [
+          "the organiser reserves the right to reschedule cancel or relocate the event at its sole discretion without obligation to refund",
+          "venue may change without notice",
+          "we may postpone without refund"
+        ],
+        "risk_categories": ["unilateral_rescheduling", "weak_refund"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "tic_non_transferable",
+        "name": "Non-transferable with cancellation penalty",
+        "regex": "(non[-\\s]?transferable|resale.{0,40}(prohibited|forbidden)).{0,60}(cancellation|forfeit|without\\s+refund)?",
+        "phrase_examples": [
+          "tickets are non-transferable",
+          "resale is strictly prohibited and may result in cancellation without refund",
+          "transfers will be cancelled without refund"
+        ],
+        "risk_categories": ["non_refundable", "weak_refund"],
+        "severity_hint": "medium"
+      },
+      {
+        "id": "tic_jurisdiction_foreign",
+        "name": "Disputes locked to foreign jurisdiction",
+        "regex": "(disputes|claims).{0,60}(courts\\s+of|exclusively\\s+in|exclusive\\s+jurisdiction).{0,60}(singapore|london|delaware|new\\s+york|foreign)",
+        "phrase_examples": [
+          "all disputes shall be resolved exclusively in courts of Singapore",
+          "exclusive jurisdiction of London courts",
+          "claims may only be brought in Delaware"
+        ],
+        "risk_categories": ["jurisdiction_trap", "forced_arbitration"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "tic_no_liability_injury",
+        "name": "Organiser disclaims liability for injury / loss",
+        "regex": "(not\\s+liable|no\\s+liability|disclaim).{0,80}(loss|injury|damage|theft)",
+        "phrase_examples": [
+          "the organiser is not liable for any loss injury or damage suffered at the event",
+          "no liability for personal injury",
+          "we disclaim all liability for loss of belongings"
+        ],
+        "risk_categories": ["overbroad_liability", "one_sided_indemnity"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "tic_class_waiver",
+        "name": "Class action / jury waiver in ticket terms",
+        "regex": "(class\\s+action|jury\\s+trial).{0,40}(waive|waiver)",
+        "phrase_examples": [
+          "you waive any right to bring a class action",
+          "no jury trial",
+          "class arbitration waiver"
+        ],
+        "risk_categories": ["forced_arbitration", "jurisdiction_trap"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "tic_force_majeure_no_refund",
+        "name": "Force majeure with no refund obligation",
+        "regex": "(force\\s+majeure|acts\\s+of\\s+god|circumstances\\s+beyond).{0,80}(no\\s+refund|without\\s+refund|no\\s+obligation)",
+        "phrase_examples": [
+          "in event of force majeure no refund shall be issued",
+          "we shall have no obligation to refund in case of acts of god",
+          "circumstances beyond our control - no refund"
+        ],
+        "risk_categories": ["non_refundable", "unilateral_rescheduling"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "tic_silent_terms_change",
+        "name": "Terms may change without notice to ticket holder",
+        "regex": "(terms|conditions).{0,40}(change|amend|update).{0,40}(any\\s+time|without\\s+notice)",
+        "phrase_examples": [
+          "terms may be changed at any time",
+          "conditions amended without notice",
+          "we may update these terms"
+        ],
+        "risk_categories": ["unilateral_changes"],
+        "severity_hint": "medium"
+      },
+      {
+        "id": "tic_admission_refused",
+        "name": "Admission refused at sole discretion without refund",
+        "regex": "(admission|entry).{0,60}(refused|denied|revoked).{0,60}(sole\\s+discretion|without\\s+refund)",
+        "phrase_examples": [
+          "admission may be refused at our sole discretion without refund",
+          "entry may be revoked without refund",
+          "we reserve right to refuse entry"
+        ],
+        "risk_categories": ["unilateral_rescheduling", "weak_refund"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "tic_processing_fee",
+        "name": "Non-refundable processing / convenience fees",
+        "regex": "(processing|convenience|booking|service)\\s+fee.{0,40}(non[-\\s]?refundable|not\\s+refundable)",
+        "phrase_examples": [
+          "convenience fee is non-refundable",
+          "booking fee not refundable",
+          "service fees are not refundable under any circumstances"
+        ],
+        "risk_categories": ["hidden_fees", "non_refundable"],
+        "severity_hint": "medium"
+      }
+    ]
+  },
+  {
+    "domain": "consumer",
+    "patterns": [
+      {
+        "id": "con_all_sales_final",
+        "name": "All sales final / no returns",
+        "regex": "(all\\s+sales\\s+(are\\s+)?final|no\\s+returns|no\\s+refund\\s+policy)",
+        "phrase_examples": [
+          "all sales are final",
+          "no returns or refunds",
+          "no refund policy applies"
+        ],
+        "risk_categories": ["non_refundable", "weak_refund"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "con_unilateral_terms",
+        "name": "Terms modifiable by company at any time",
+        "regex": "(modify|change|amend).{0,40}(these\\s+terms|this\\s+agreement).{0,40}(any\\s+time|without\\s+notice|sole\\s+discretion)",
+        "phrase_examples": [
+          "we may modify these terms at any time",
+          "agreement may be amended at our discretion",
+          "terms can change without notice"
+        ],
+        "risk_categories": ["unilateral_changes"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "con_indemnify_company",
+        "name": "User-side indemnity for any claims",
+        "regex": "(you\\s+(shall|will|agree\\s+to)\\s+indemnify|user\\s+(shall|will)\\s+indemnify)",
+        "phrase_examples": [
+          "you indemnify us for any claims arising",
+          "user shall indemnify and hold harmless the company",
+          "you agree to indemnify against all losses"
+        ],
+        "risk_categories": ["one_sided_indemnity", "overbroad_liability"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "con_warranty_disclaim",
+        "name": "Sold 'as is', no warranty of any kind",
+        "regex": "(as\\s+is|as[-\\s]is\\s+basis|no\\s+warranty).{0,60}(of\\s+any\\s+kind|express\\s+or\\s+implied|merchantability|fitness)",
+        "phrase_examples": [
+          "service is provided as is without warranty of any kind",
+          "no warranty express or implied",
+          "no warranty of merchantability or fitness for purpose"
+        ],
+        "risk_categories": ["overbroad_liability"],
+        "severity_hint": "medium"
+      },
+      {
+        "id": "con_liability_cap_low",
+        "name": "Liability capped to a small recent payment",
+        "regex": "(liability.{0,40}(limited|capped)).{0,80}(amount\\s+paid|last\\s+(month|six\\s+months)|rs\\.?\\s*\\d|inr\\s*\\d)",
+        "phrase_examples": [
+          "our liability is limited to the amount paid in the last month",
+          "total liability capped at INR 1000",
+          "no liability beyond fees paid in the prior six months"
+        ],
+        "risk_categories": ["overbroad_liability"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "con_auto_renew",
+        "name": "Auto-renewal without explicit consent",
+        "regex": "(auto[-\\s]?renew|automatically\\s+renew|continue\\s+to\\s+bill).{0,80}(unless|until\\s+you\\s+cancel|in\\s+writing)",
+        "phrase_examples": [
+          "subscription will automatically renew unless cancelled in writing",
+          "we will continue to bill you until cancellation",
+          "auto-renew unless you opt out 30 days prior"
+        ],
+        "risk_categories": ["auto_renewal", "hidden_fees"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "con_hidden_fees",
+        "name": "Hidden / additional fees",
+        "regex": "(additional|extra|surcharge|service\\s+fee).{0,60}(may\\s+apply|at\\s+our\\s+discretion|without\\s+notice)",
+        "phrase_examples": [
+          "additional fees may apply",
+          "surcharge at our discretion",
+          "service fees may be added without notice"
+        ],
+        "risk_categories": ["hidden_fees"],
+        "severity_hint": "medium"
+      },
+      {
+        "id": "con_forced_arbitration",
+        "name": "Mandatory arbitration in foreign seat",
+        "regex": "(disputes.{0,60}arbitration|binding\\s+arbitration).{0,60}(seat|singapore|london|new\\s+york|delaware|foreign)",
+        "phrase_examples": [
+          "all disputes resolved by binding arbitration with seat in Singapore",
+          "mandatory arbitration in London",
+          "arbitration administered under foreign rules"
+        ],
+        "risk_categories": ["forced_arbitration", "jurisdiction_trap"],
+        "severity_hint": "high"
+      },
+      {
+        "id": "con_no_warranty_results",
+        "name": "No warranty of results / outcomes",
+        "regex": "(no\\s+(guarantee|assurance|warranty)).{0,60}(result|outcome|success|accuracy|availability)",
+        "phrase_examples": [
+          "we make no guarantee of any specific result",
+          "no warranty as to accuracy or availability",
+          "no assurance of outcomes"
+        ],
+        "risk_categories": ["overbroad_liability"],
+        "severity_hint": "low"
+      },
+      {
+        "id": "con_credit_only_refund",
+        "name": "Refund only as store credit",
+        "regex": "(refund).{0,40}(store\\s+credit|wallet\\s+credit|credit\\s+note|gift\\s+card)",
+        "phrase_examples": [
+          "refunds will be issued only as store credit",
+          "refund processed as wallet credit",
+          "refunds in the form of a gift card"
+        ],
+        "risk_categories": ["weak_refund"],
+        "severity_hint": "medium"
+      }
+    ]
+  }
+]

@@ -1,0 +1,373 @@
+[
+  {
+    "id": "ica_s23",
+    "act": "Indian Contract Act, 1872",
+    "section": "23",
+    "title": "Lawful object and consideration; agreements opposed to public policy",
+    "summary": "Any agreement whose object or consideration is unlawful, fraudulent, immoral, or opposed to public policy is void. Courts use this to strike down clauses that try to do indirectly what the law forbids - for example, clauses that effectively waive a statutory consumer or employee right.",
+    "applies_to": [
+      "overbroad_liability",
+      "one_sided_indemnity",
+      "forced_arbitration",
+      "silent_consent"
+    ],
+    "domains": ["employment", "consumer", "privacy", "ticketing"],
+    "keywords": [
+      "public policy",
+      "void agreement",
+      "waiver of rights",
+      "unlawful",
+      "immoral",
+      "fraudulent"
+    ]
+  },
+  {
+    "id": "ica_s27",
+    "act": "Indian Contract Act, 1872",
+    "section": "27",
+    "title": "Agreements in restraint of trade are void",
+    "summary": "Every agreement by which a person is restrained from exercising a lawful profession, trade or business is void in India, except for the narrow exception of sale-of-goodwill. Post-employment non-compete restrictions are therefore generally unenforceable in India, unlike in many western jurisdictions.",
+    "applies_to": ["non_compete_overreach"],
+    "domains": ["employment"],
+    "keywords": [
+      "non-compete",
+      "restraint of trade",
+      "post-termination restriction",
+      "garden leave",
+      "competitor",
+      "similar business",
+      "exclusive employment"
+    ]
+  },
+  {
+    "id": "ica_s28",
+    "act": "Indian Contract Act, 1872",
+    "section": "28",
+    "title": "Agreements in restraint of legal proceedings are void",
+    "summary": "Clauses that absolutely restrict a party from enforcing rights in ordinary courts, or that limit the time within which rights may be enforced, are void. Exclusive-foreign-forum or class-action waiver clauses risk falling foul of this when applied to Indian consumers and employees.",
+    "applies_to": ["forced_arbitration", "jurisdiction_trap"],
+    "domains": ["employment", "consumer", "ticketing", "privacy"],
+    "keywords": [
+      "exclusive jurisdiction",
+      "class action waiver",
+      "jury trial waiver",
+      "forum selection",
+      "arbitration",
+      "limitation period"
+    ]
+  },
+  {
+    "id": "ica_s73",
+    "act": "Indian Contract Act, 1872",
+    "section": "73",
+    "title": "Compensation for loss caused by breach of contract",
+    "summary": "When a contract is broken, the party who suffers is entitled to compensation for loss naturally arising from the breach, not for remote or indirect loss. Clauses that broadly disclaim all liability conflict with this principle when the loss is direct and foreseeable.",
+    "applies_to": ["overbroad_liability"],
+    "domains": ["consumer", "employment", "ticketing"],
+    "keywords": [
+      "limitation of liability",
+      "no liability",
+      "disclaim damages",
+      "consequential damages",
+      "breach of contract"
+    ]
+  },
+  {
+    "id": "ica_s74",
+    "act": "Indian Contract Act, 1872",
+    "section": "74",
+    "title": "Compensation for breach where penalty is stipulated",
+    "summary": "If a contract names a sum payable on breach, the injured party is entitled to reasonable compensation up to that sum - not the full amount automatically. Forfeiture and liquidated-damages clauses (e.g. forfeiting two months of salary for short notice) are read down to actual loss.",
+    "applies_to": ["wage_leave_ambiguity", "vague_termination", "hidden_fees"],
+    "domains": ["employment", "consumer"],
+    "keywords": [
+      "liquidated damages",
+      "penalty clause",
+      "forfeiture",
+      "notice period buyout",
+      "early termination fee"
+    ]
+  },
+  {
+    "id": "cpa_s2_46",
+    "act": "Consumer Protection Act, 2019",
+    "section": "2(46)",
+    "title": "Definition of 'unfair contract'",
+    "summary": "An unfair contract is one that causes a significant change in the consumer's rights, including excessive security deposits, disproportionate penalties for breach, unilateral termination without cause, unilateral assignment, or refusing refund for paid consideration. The Act gives consumers a direct remedy against such terms.",
+    "applies_to": [
+      "unilateral_changes",
+      "vague_termination",
+      "weak_refund",
+      "non_refundable",
+      "one_sided_indemnity"
+    ],
+    "domains": ["consumer", "ticketing"],
+    "keywords": [
+      "unfair contract",
+      "unfair term",
+      "unilateral termination",
+      "excessive deposit",
+      "disproportionate penalty"
+    ]
+  },
+  {
+    "id": "cpa_s2_47",
+    "act": "Consumer Protection Act, 2019",
+    "section": "2(47)",
+    "title": "Definition of 'unfair trade practice'",
+    "summary": "Includes misleading advertising, deceptive descriptions of goods/services, withholding refunds, and refusing to take back defective products. Hidden charges and misleading 'no refund under any circumstances' framing fall within this definition when the underlying service was deficient.",
+    "applies_to": ["hidden_fees", "weak_refund", "non_refundable", "unilateral_rescheduling"],
+    "domains": ["consumer", "ticketing"],
+    "keywords": [
+      "unfair trade practice",
+      "misleading",
+      "deceptive",
+      "hidden charge",
+      "refund denial",
+      "false claim"
+    ]
+  },
+  {
+    "id": "cpa_s49_2",
+    "act": "Consumer Protection Act, 2019",
+    "section": "49(2)",
+    "title": "State Commission power to declare contract terms null and void",
+    "summary": "The State Consumer Commission can declare any term of a contract that is unfair to a consumer as null and void. This gives consumers an affordable forum (no court fees up to threshold) to challenge one-sided e-commerce, ticketing, and policy terms.",
+    "applies_to": ["unilateral_changes", "non_refundable", "weak_refund", "one_sided_indemnity"],
+    "domains": ["consumer", "ticketing"],
+    "keywords": [
+      "consumer commission",
+      "null and void",
+      "unfair contract term",
+      "consumer remedy"
+    ]
+  },
+  {
+    "id": "dpdp_s4",
+    "act": "Digital Personal Data Protection Act, 2023",
+    "section": "4",
+    "title": "Grounds for processing personal data",
+    "summary": "A Data Fiduciary may process personal data only for a lawful purpose and only with the Data Principal's consent or for certain narrow legitimate uses. Generic catch-all 'business purposes' processing is not a valid ground under Indian law.",
+    "applies_to": [
+      "silent_consent",
+      "excessive_data_sharing",
+      "third_party_sharing",
+      "pii_lockin"
+    ],
+    "domains": ["privacy"],
+    "keywords": [
+      "lawful purpose",
+      "consent",
+      "data principal",
+      "data fiduciary",
+      "processing personal data"
+    ]
+  },
+  {
+    "id": "dpdp_s5",
+    "act": "Digital Personal Data Protection Act, 2023",
+    "section": "5",
+    "title": "Notice before or at the time of consent",
+    "summary": "Before or at the time of seeking consent, the Data Fiduciary must give a clear notice describing the personal data collected, the purpose, how to exercise rights, and how to complain to the Board. Notices buried in long policies or after consent has been collected do not satisfy this section.",
+    "applies_to": ["silent_consent", "excessive_data_sharing"],
+    "domains": ["privacy"],
+    "keywords": ["notice", "consent notice", "data principal rights", "purpose of processing"]
+  },
+  {
+    "id": "dpdp_s6",
+    "act": "Digital Personal Data Protection Act, 2023",
+    "section": "6",
+    "title": "Consent must be free, specific, informed, unconditional, unambiguous",
+    "summary": "Consent must be specific to the purpose, freely given, and capable of being withdrawn as easily as it was given. Pre-ticked boxes, bundling unrelated purposes, and 'by using our service you consent' framings are not valid consent under the Act.",
+    "applies_to": ["silent_consent", "excessive_data_sharing", "third_party_sharing"],
+    "domains": ["privacy"],
+    "keywords": [
+      "informed consent",
+      "withdraw consent",
+      "specific consent",
+      "by using you consent",
+      "pre-ticked"
+    ]
+  },
+  {
+    "id": "dpdp_s7",
+    "act": "Digital Personal Data Protection Act, 2023",
+    "section": "7",
+    "title": "Certain legitimate uses (narrow exceptions)",
+    "summary": "Processing without consent is allowed only for a closed list of legitimate uses: voluntarily provided data for a specified purpose, State services, medical emergencies, employment-related purposes, etc. 'Legitimate business interest' as used in GDPR is NOT a ground under Indian law - flagging a privacy notice that relies on it is appropriate.",
+    "applies_to": ["silent_consent", "excessive_data_sharing"],
+    "domains": ["privacy"],
+    "keywords": [
+      "legitimate use",
+      "legitimate business interest",
+      "without consent",
+      "voluntary provision"
+    ]
+  },
+  {
+    "id": "dpdp_s8",
+    "act": "Digital Personal Data Protection Act, 2023",
+    "section": "8",
+    "title": "General obligations of a Data Fiduciary",
+    "summary": "A Data Fiduciary is responsible for compliance, must implement reasonable security safeguards to prevent breaches, must erase data when the purpose is served (or earlier on withdrawal), and must publish business and grievance-officer contacts. Indefinite or vague retention clauses conflict with these obligations.",
+    "applies_to": ["pii_lockin", "third_party_sharing", "silent_consent"],
+    "domains": ["privacy"],
+    "keywords": [
+      "security safeguards",
+      "data retention",
+      "erase data",
+      "data breach",
+      "grievance officer"
+    ]
+  },
+  {
+    "id": "dpdp_s9",
+    "act": "Digital Personal Data Protection Act, 2023",
+    "section": "9",
+    "title": "Processing personal data of children",
+    "summary": "Verifiable parental consent is required before processing personal data of a child (under 18). Targeted advertising directed at children and processing likely to cause detrimental effects on them are prohibited.",
+    "applies_to": ["silent_consent", "excessive_data_sharing"],
+    "domains": ["privacy", "consumer"],
+    "keywords": [
+      "child data",
+      "minor",
+      "parental consent",
+      "targeted advertising children",
+      "under 18"
+    ]
+  },
+  {
+    "id": "dpdp_s11",
+    "act": "Digital Personal Data Protection Act, 2023",
+    "section": "11",
+    "title": "Right to access information about personal data",
+    "summary": "A Data Principal has the right to obtain a summary of personal data being processed, the identities of other Data Fiduciaries the data has been shared with, and the purposes of processing. Policies that hide third-party recipients infringe this right.",
+    "applies_to": ["pii_lockin", "third_party_sharing"],
+    "domains": ["privacy"],
+    "keywords": [
+      "right of access",
+      "data access",
+      "third party recipients",
+      "data principal rights"
+    ]
+  },
+  {
+    "id": "dpdp_s12",
+    "act": "Digital Personal Data Protection Act, 2023",
+    "section": "12",
+    "title": "Right to correction and erasure of personal data",
+    "summary": "A Data Principal has the right to correct, complete, update, and erase personal data. The Data Fiduciary must erase data when the specified purpose is no longer being served, unless retention is required by law. Clauses that retain data 'as long as we deem necessary' are inconsistent with this right.",
+    "applies_to": ["pii_lockin"],
+    "domains": ["privacy"],
+    "keywords": ["right to erasure", "right to correction", "data deletion", "retain indefinitely"]
+  },
+  {
+    "id": "dpdp_s13",
+    "act": "Digital Personal Data Protection Act, 2023",
+    "section": "13",
+    "title": "Right of grievance redressal",
+    "summary": "Every Data Principal has the right to a readily available grievance-redressal mechanism provided by the Data Fiduciary. Privacy policies that omit a clear grievance contact or response timeline conflict with this section.",
+    "applies_to": ["silent_consent"],
+    "domains": ["privacy"],
+    "keywords": ["grievance redressal", "grievance officer", "complaint mechanism"]
+  },
+  {
+    "id": "it_s43a",
+    "act": "Information Technology Act, 2000",
+    "section": "43A",
+    "title": "Compensation for failure to protect sensitive personal data",
+    "summary": "A body corporate that possesses sensitive personal data and is negligent in implementing reasonable security practices, causing wrongful loss or gain, is liable to pay compensation to the affected person. Operates in addition to DPDP Act 2023.",
+    "applies_to": ["pii_lockin", "third_party_sharing", "excessive_data_sharing"],
+    "domains": ["privacy"],
+    "keywords": [
+      "sensitive personal data",
+      "reasonable security practices",
+      "data breach compensation",
+      "body corporate"
+    ]
+  },
+  {
+    "id": "ieso_1946",
+    "act": "Industrial Employment (Standing Orders) Act, 1946",
+    "section": "Schedule",
+    "title": "Mandatory standing orders covering classification, leave, holidays, termination, suspension",
+    "summary": "Establishments covered by the Act must have certified standing orders covering classification of workers, working hours, leave and holidays, conditions of termination, and grievance redressal. Employer cannot unilaterally change these conditions of service - any 'as per company policy revised from time to time' clause conflicts with this requirement.",
+    "applies_to": [
+      "wage_leave_ambiguity",
+      "extended_probation",
+      "vague_termination",
+      "unilateral_changes"
+    ],
+    "domains": ["employment"],
+    "keywords": [
+      "standing orders",
+      "conditions of service",
+      "leave policy",
+      "probation",
+      "company policy may change",
+      "as per policy"
+    ]
+  },
+  {
+    "id": "id_act_s2a",
+    "act": "Industrial Disputes Act, 1947",
+    "section": "2A",
+    "title": "Dismissal of an individual workman as a deemed industrial dispute",
+    "summary": "An individual workman dismissed, discharged, retrenched, or whose services are terminated may directly raise an industrial dispute even without union backing. This blunts clauses that purport to allow termination 'at any time, without notice, for any reason'.",
+    "applies_to": ["vague_termination"],
+    "domains": ["employment"],
+    "keywords": [
+      "termination without cause",
+      "dismissal",
+      "retrenchment",
+      "industrial dispute",
+      "workman"
+    ]
+  },
+  {
+    "id": "pwa_1936",
+    "act": "Payment of Wages Act, 1936 (and Code on Wages, 2019)",
+    "section": "General",
+    "title": "Timely payment of wages and restricted deductions",
+    "summary": "Wages must be paid by the prescribed date (typically the 7th or 10th of the following month) and deductions are limited to those authorised by law. Clauses giving the employer discretion to revise stipend/salary 'without notice' or to forfeit large multiples of pay risk infringing this framework.",
+    "applies_to": ["wage_leave_ambiguity"],
+    "domains": ["employment"],
+    "keywords": [
+      "wage payment",
+      "stipend revision",
+      "salary deduction",
+      "minimum wages",
+      "code on wages"
+    ]
+  },
+  {
+    "id": "matben_1961",
+    "act": "Maternity Benefit Act, 1961",
+    "section": "5",
+    "title": "Statutory maternity leave of 26 weeks",
+    "summary": "Women employees in establishments with 10 or more employees are entitled to 26 weeks of paid maternity leave (12 weeks for third-and-subsequent children). This is a statutory minimum that company leave policies cannot reduce.",
+    "applies_to": ["wage_leave_ambiguity"],
+    "domains": ["employment"],
+    "keywords": ["maternity leave", "maternity benefit", "26 weeks", "paid leave"]
+  },
+  {
+    "id": "sra_s14",
+    "act": "Specific Relief Act, 1963",
+    "section": "14",
+    "title": "Contracts not specifically enforceable",
+    "summary": "Contracts whose performance involves continuous duties, personal qualifications, or where compensation is an adequate remedy, cannot be specifically enforced. Restrictions like 'employee must continue in service for X years' are typically met with damages at best, not injunctions.",
+    "applies_to": ["non_compete_overreach", "wage_leave_ambiguity"],
+    "domains": ["employment"],
+    "keywords": ["specific performance", "bond period", "service bond", "continuous service"]
+  },
+  {
+    "id": "code_on_wages_2019",
+    "act": "Code on Wages, 2019",
+    "section": "General",
+    "title": "Minimum wages, equal remuneration, and timely payment",
+    "summary": "Consolidates Payment of Wages, Minimum Wages, Equal Remuneration, and Payment of Bonus laws. Establishes universal minimum-wage floors and prohibits gender-based wage discrimination across all employees, not only 'workmen'.",
+    "applies_to": ["wage_leave_ambiguity"],
+    "domains": ["employment"],
+    "keywords": ["minimum wage", "equal remuneration", "wage code", "timely payment", "bonus"]
+  }
+]

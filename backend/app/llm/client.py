@@ -38,7 +38,7 @@ class LLMClient:
             return
         backend = self._settings.LLM_BACKEND
         if backend == "vertex":
-            import vertexai  # noqa: PLC0415
+            import vertexai
 
             if not self._settings.GCP_PROJECT_ID:
                 raise LLMError("GCP_PROJECT_ID is required when LLM_BACKEND=vertex.")
@@ -47,7 +47,7 @@ class LLMClient:
                 location=self._settings.GCP_REGION,
             )
         elif backend == "aistudio":
-            import google.generativeai as genai  # noqa: PLC0415
+            import google.generativeai as genai
 
             if not self._settings.GEMINI_API_KEY:
                 raise LLMError("GEMINI_API_KEY is required when LLM_BACKEND=aistudio.")
@@ -71,7 +71,7 @@ class LLMClient:
         model_name = self._model_name(heavy=heavy)
 
         if self._settings.LLM_BACKEND == "vertex":
-            from vertexai.generative_models import (  # noqa: PLC0415
+            from vertexai.generative_models import (
                 GenerationConfig,
                 GenerativeModel,
             )
