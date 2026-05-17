@@ -65,7 +65,7 @@ async def analyze_pdf(
         )
 
     text = extract_text_from_pdf(data)
-    log.info("pdf_ingested", extra={"chars": len(text), "filename": file.filename})
+    log.info("pdf_ingested", extra={"chars": len(text), "pdf_filename": file.filename})
 
     return await _run(text=text, domain=domain_hint, language=language, source_url=None)
 
